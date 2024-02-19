@@ -1,3 +1,5 @@
+package com.mygdx.game;
+
 import java.util.List;
 
 public class DesignDocument {

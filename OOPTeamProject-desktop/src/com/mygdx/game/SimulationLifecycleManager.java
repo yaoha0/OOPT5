@@ -1,8 +1,9 @@
+package com.mygdx.game;
+
 import java.util.List;
 import java.util.ArrayList;
 
-class DesignDocument {}
-class GameLevel {}
+
 
 public class SimulationLifecycleManager {
     private String currentState;
@@ -21,7 +22,7 @@ public class SimulationLifecycleManager {
         currentState = "Initialized";
         saveState = false;
         gameTitle = "Title of Our Game HEHE";
-        designDocument = new DesignDocument();
+        designDocument = new DesignDocument("");
         prototypeVersion = 1;
         levels = new ArrayList<>();
         testingFeedback = new ArrayList<>();

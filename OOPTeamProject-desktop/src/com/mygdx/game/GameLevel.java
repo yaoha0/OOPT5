@@ -1,3 +1,5 @@
+package com.mygdx.game;
+
 public class GameLevel {
     private int levelNumber;
     private String levelLayout;

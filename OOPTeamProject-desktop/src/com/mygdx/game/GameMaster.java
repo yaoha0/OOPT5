@@ -14,10 +14,13 @@ public class GameMaster extends ApplicationAdapter {
     private Player player;
     private Enemy enemy;
     private Collectible collectible;
+    private CollisionManager collisionManager;
+    private AiControlManager aicontrolManager;
     
     @Override
     public void create() {
     	batch = new SpriteBatch();
+    	collisionManager = new CollisionManager();
         entityManager = new EntityManager();
 
         // texturePath url, x, y, width, height
@@ -28,6 +31,17 @@ public class GameMaster extends ApplicationAdapter {
         entityManager.addEntity(player);
         entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
+        collisionManager.addEntity(player);
+        collisionManager.addEntity(collectible);
+        collisionManager.addEntity(enemy);
+        
+     // Initialize decision making components
+        DetectionSystem detectionSystem = new DetectionSystem();
+        PathfindingSystem pathfindingSystem = new PathfindingSystem();
+        DecisionMaking decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
+
+        // Initialize AI control manager
+        aicontrolManager = new AiControlManager(2, 80, decisionMaking);
     }
 
     @Override
@@ -37,9 +51,10 @@ public class GameMaster extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         
         entityManager.update(Gdx.graphics.getDeltaTime());
-        
         entityManager.renderShape();
         entityManager.renderBatch(batch);
+        aicontrolManager.updateAI(enemy, player);
+        collisionManager.checkCollisions();
     }
 
  
