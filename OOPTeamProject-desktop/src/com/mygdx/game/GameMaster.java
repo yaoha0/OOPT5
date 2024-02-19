@@ -12,7 +12,7 @@ public class GameMaster extends ApplicationAdapter {
 	private SpriteBatch batch;
     private EntityManager entityManager;
     private Player player;
-    //private Enemy enemy;
+    private Enemy enemy;
     private Collectible collectible;
     
     @Override
@@ -21,13 +21,13 @@ public class GameMaster extends ApplicationAdapter {
         entityManager = new EntityManager();
 
         // texturePath url, x, y, width, height
-        player = new Player("texturePath", 100, 100, 20, 20); 
-        collectible = new Collectible("entity/objects/gemRed.png", 200, 200, 70, 70);
-        //enemy = new Enemy("entity/enemy/mon1_sprite.png", 200, 0, 200, 200);
+        player = new Player("entity/player/cat_fighter_sprite0.png", 100, 100, 150, 150); 
+        collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
+        enemy = new Enemy("entity/enemy/mon1_sprite.png", 500, 100, 150, 150);
         
         entityManager.addEntity(player);
         entityManager.addEntity(collectible);
-        //entityManager.addEntity(enemy);
+        entityManager.addEntity(enemy);
     }
 
     @Override
@@ -40,7 +40,6 @@ public class GameMaster extends ApplicationAdapter {
         
         entityManager.renderShape();
         entityManager.renderBatch(batch);
-
     }
 
  

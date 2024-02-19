@@ -10,10 +10,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Array;
 
-public class Player extends Entity{
+public class Enemy extends Entity{
     private Texture texture;
 
-    public Player(String texturePath, float x, float y, float width, float height) {
+    public Enemy(String texturePath, float x, float y, float width, float height) {
         super(null, x, y, width, height);
         texture = new Texture(texturePath);
     }
@@ -40,5 +40,6 @@ public class Player extends Entity{
             texture = null;
         }
     }
-}
 
+    
+}
