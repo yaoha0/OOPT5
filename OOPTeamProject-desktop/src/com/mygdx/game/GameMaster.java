@@ -27,6 +27,8 @@ public class GameMaster extends ApplicationAdapter {
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
     private DecisionMaking decisionMaking;
+    private PlayerControlManager playerControlManager;
+    private InputOutputManager inputOutputManager;
 
     @Override
     public void create() {
@@ -69,7 +71,11 @@ public class GameMaster extends ApplicationAdapter {
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Initialize AI control manager
-        aicontrolManager = new AiControlManager(2, 80, decisionMaking);  
+        aicontrolManager = new AiControlManager(2, 80, decisionMaking); 
+        playerControlManager = new PlayerControlManager(player);
+        inputOutputManager = new InputOutputManager(playerControlManager);
+        Gdx.input.setInputProcessor(inputOutputManager);
+        
     }
 
     @Override
@@ -150,20 +156,19 @@ public class GameMaster extends ApplicationAdapter {
                 }
             }
         }
-
         batch.end();
-
+        
+        
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
+        playerControlManager.update(Gdx.graphics.getDeltaTime());
         entityManager.renderShape();
         entityManager.renderBatch(batch);
-
-        
-        // Update Ai actions
-        aicontrolManager.updateAI(enemy, player);
-        
-        //Checks game for collisions
         collisionManager.checkCollisions();
+        aicontrolManager.updateAI(enemy, player);   
+        
+       
+       
         
         // Check for Escape key press to resume game
         if (isPopupVisible && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -175,6 +180,7 @@ public class GameMaster extends ApplicationAdapter {
             System.out.println("Game resumed."); // Resume the game
             isPopupVisible = false;
         }
+        
     }
 
     @Override
