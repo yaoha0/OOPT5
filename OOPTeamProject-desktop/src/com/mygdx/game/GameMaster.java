@@ -107,13 +107,28 @@ public class GameMaster extends ApplicationAdapter {
                 if (touchX >= buttonsX && touchX <= buttonsX + buttonWidth &&
                         touchY >= buttonY && touchY <= buttonY + buttonHeight) {
                     if (isPaused) {
-                        resumeGame(); // Resume the game
+                       // Resume the game
+                        if (!isPopupVisible) return;
+                        // Only resume if popup is visible
+                        isPaused = false;
+                        // Additional logic to resume the game
+                        simulationLifeCycle.resumeGame();
+                        System.out.println("Game resumed.");
                     } else {
-                        pauseGame(); // Pause the game
+                        // Pause the game
+                        if (!isPopupVisible) return; // Only pause if popup is visible
+                        // Additional logic to pause the game
+                        simulationLifeCycle.pauseGame();
+                        isPaused = true;
+                        System.out.println("Game paused.");
                     }
                 } else if (touchX >= exitButtonX && touchX <= exitButtonX + buttonWidth &&
                         touchY >= buttonY && touchY <= buttonY + buttonHeight) {
-                    exitGame(); // Exit the game
+                  // Exit the game
+                    isPopupVisible = false;
+                    // Additional logic to exit the game
+                    simulationLifeCycle.exitGame();
+                    System.out.println("Game exited.");
                 }
             }
         }
@@ -127,7 +142,12 @@ public class GameMaster extends ApplicationAdapter {
 
         // Check for Escape key press to resume game
         if (isPopupVisible && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            resumeGame(); // Resume the game
+            if (!isPopupVisible) return;
+            // Only resume if popup is visible
+            isPaused = false;
+            // Additional logic to resume the game
+            simulationLifeCycle.resumeGame();
+            System.out.println("Game resumed."); // Resume the game
             isPopupVisible = false;
         }
     }
@@ -141,33 +161,6 @@ public class GameMaster extends ApplicationAdapter {
         exitButtonTexture.dispose();
     }
 
-// Function to pause the game
-    public void pauseGame() {
-        if (!isPopupVisible) return; // Only pause if popup is visible
-        // Additional logic to pause the game
-        simulationLifeCycle.pauseGame();
-        isPaused = true;
-        System.out.println("Game paused.");
-    }
-
-
-    // Function to exit the game
-    public void exitGame() {
-        isPopupVisible = false;
-        // Additional logic to exit the game
-        simulationLifeCycle.exitGame();
-        System.out.println("Game exited.");
-    }
-
-    // Function to resume the game
-    public void resumeGame() {
-        if (!isPopupVisible) return;
-        // Only resume if popup is visible
-        isPaused = false;
-        // Additional logic to resume the game
-        simulationLifeCycle.resumeGame();
-        System.out.println("Game resumed.");
-    }
 
 }
 
