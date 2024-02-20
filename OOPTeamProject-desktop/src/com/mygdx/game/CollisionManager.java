@@ -1,12 +1,18 @@
 package com.mygdx.game;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionManager {
+	private EntityManager entityManager;
     private List<Entity> entities;
+    private int Collectiblecount;
 
-    public CollisionManager() {
-       entities = new ArrayList<>();
+    public CollisionManager(EntityManager entityManager) {
+    	this.entityManager = entityManager;
+    	this.Collectiblecount = 0;
+    	entities = new ArrayList<>();
     }
 
     public void addEntity(Entity entity) {
@@ -38,8 +44,17 @@ public class CollisionManager {
     
     //ToBeImplemented
     public void handleCollision(Entity obj1, Entity obj2) {	
-    	System.out.println(obj1.texture + " has collided with " + obj2.texture);
+        // Handle collision with player
+    	if (obj1 instanceof Player && obj2 instanceof Collectible || obj1 instanceof Collectible && obj2 instanceof Player) {
+    		System.out.println("Player has collided with Collectible");
+    		entityManager.removeEntity(obj2); // Remove collectible from EntityManager
+    		Collectiblecount += 1;
+    		System.out.println("Player has collected " + Collectiblecount + " collectibles");
+        } else if (obj1 instanceof Player && obj2 instanceof Enemy || obj1 instanceof Collectible && obj2 instanceof Enemy) {
+            // Handle collision with enemy
+        	System.out.println("Player has collided with Enemy");
+        }
+        }
     	
     }
     
-}

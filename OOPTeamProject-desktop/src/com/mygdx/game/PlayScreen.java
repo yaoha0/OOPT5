@@ -40,9 +40,9 @@ public class PlayScreen implements Screen {
     }
 
     private void initialize() {
-        collisionManager = new CollisionManager();
         entityManager = new EntityManager();
-
+        collisionManager = new CollisionManager(entityManager);
+        
         // Set up the camera
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
