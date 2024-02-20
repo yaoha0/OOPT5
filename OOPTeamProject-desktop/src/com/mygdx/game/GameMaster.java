@@ -22,10 +22,16 @@ public class GameMaster extends ApplicationAdapter {
     private boolean isPopupVisible;
     private OrthographicCamera camera;
     private SimulationLifeCycle simulationLifeCycle;
+    private CollisionManager collisionManager;
+    private AiControlManager aicontrolManager;
+    private PathfindingSystem pathfindingSystem;
+    private DetectionSystem detectionSystem;
+    private DecisionMaking decisionMaking;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
+        collisionManager = new CollisionManager();
         entityManager = new EntityManager();
 
         // Set up the camera
@@ -42,6 +48,11 @@ public class GameMaster extends ApplicationAdapter {
         entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
 
+        // Add entities to the collision manager
+        collisionManager.addEntity(player);
+        collisionManager.addEntity(collectible);
+        collisionManager.addEntity(enemy);
+        
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -52,6 +63,13 @@ public class GameMaster extends ApplicationAdapter {
 
         // Initialize SimulationLifecycle instance
         simulationLifeCycle = new SimulationLifeCycle();
+        
+        // Initialize decision making components
+        detectionSystem = new DetectionSystem();
+        pathfindingSystem = new PathfindingSystem();
+        decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
+        // Initialize AI control manager
+        aicontrolManager = new AiControlManager(2, 80, decisionMaking);  
     }
 
     @Override
@@ -140,6 +158,13 @@ public class GameMaster extends ApplicationAdapter {
         entityManager.renderShape();
         entityManager.renderBatch(batch);
 
+        
+        // Update Ai actions
+        aicontrolManager.updateAI(enemy, player);
+        
+        //Checks game for collisions
+        collisionManager.checkCollisions();
+        
         // Check for Escape key press to resume game
         if (isPopupVisible && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             if (!isPopupVisible) return;
