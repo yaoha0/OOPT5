@@ -1,5 +1,6 @@
-package simulationLC;
+package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Ellipsis {
@@ -64,4 +65,6 @@ public class Ellipsis {
         texture.dispose();
     }
 
+
 }
+

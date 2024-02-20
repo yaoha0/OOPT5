@@ -1,25 +1,22 @@
-package simulationLC;
+package com.mygdx.game;
 
 public class SimulationLifeCycle {
     private boolean isPaused;
-    private boolean isExiting;
 
+    private boolean isExiting;
     public void pauseGame() {
-        // Pause the game logic
+        // the pausing is done playercontrolmanager in the update function
         isPaused = true;
-        // Additional code for pausing game graphics/animations if needed
     }
 
     public void resumeGame() {
         // Resume the game logic
         isPaused = false;
-        // Additional code for resuming game graphics/animations if needed
     }
 
     public void exitGame() {
         // Exit the game logic
         isExiting = true;
-        // Additional cleanup code if needed before exiting the game
         System.exit(0); // Terminate the application
     }
 
