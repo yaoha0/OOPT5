@@ -78,7 +78,7 @@ public class PlayScreen implements Screen {
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Initialize AI control manager
-        aicontrolManager = new AiControlManager(2, 80, decisionMaking); 
+        aicontrolManager = new AiControlManager(2, 400, decisionMaking); 
         playerControlManager = new PlayerControlManager(player,this);
         inputOutputManager = new InputOutputManager(playerControlManager);
         Gdx.input.setInputProcessor(inputOutputManager);
