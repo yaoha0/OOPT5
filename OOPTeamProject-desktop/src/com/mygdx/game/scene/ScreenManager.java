@@ -1,5 +1,8 @@
 package scene;
 import com.mygdx.game.GameMaster;
+
+import simulationLC.SimulationLifeCycle;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
@@ -30,6 +33,6 @@ public class ScreenManager {
     }
 
     public void showEndScreen() {
-        game.setScreen(new EndScreen());
+        game.setScreen(new EndScreen(new SpriteBatch(), new SimulationLifeCycle()));
     }
 }
