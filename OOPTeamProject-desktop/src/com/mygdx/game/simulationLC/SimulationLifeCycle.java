@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package simulationLC;
 
 public class SimulationLifeCycle {
     private boolean isPaused;
