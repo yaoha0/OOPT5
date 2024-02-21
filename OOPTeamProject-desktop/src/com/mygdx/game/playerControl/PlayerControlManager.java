@@ -1,4 +1,7 @@
-package com.mygdx.game;
+package playerControl;
+
+import entity.Player;
+import scene.PlayScreen;
 
 public class PlayerControlManager {
 	private Player player;
