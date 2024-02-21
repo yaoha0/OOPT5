@@ -75,7 +75,7 @@ public class PlayScreen implements Screen {
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
 
         // AI control manager
-        aicontrolManager = new AiControlManager(2, 200, decisionMaking);
+        aicontrolManager = new AiControlManager(1, 200, decisionMaking);
         playerControlManager = new PlayerControlManager(player,this);
 
         // I/O manager
