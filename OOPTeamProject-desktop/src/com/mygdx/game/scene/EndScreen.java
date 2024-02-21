@@ -17,13 +17,13 @@ public class EndScreen implements Screen {
     private BitmapFont font;
     private SimulationLifeCycle simulationLifeCycle;
 
-    public EndScreen() {
-        batch = new SpriteBatch();
+    public EndScreen(SpriteBatch batch, SimulationLifeCycle simulationLifeCycle) {
+        this.batch = batch;
+        this.simulationLifeCycle = simulationLifeCycle;
         gameOverTexture = new Texture("simulationLC/game-over.png");
         playTexture = new Texture("simulationLC/play.png");
         font = new BitmapFont();
         font.getData().setScale(2.5f); // Increase the scale of the font
-        simulationLifeCycle = new SimulationLifeCycle();
     }
 
     @Override
