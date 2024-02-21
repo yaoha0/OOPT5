@@ -15,7 +15,6 @@ public class PathfindingSystem {
     public void IdleMovement(Entity ai,int speed) {
     	if (isMoving != true) {
     		randomXpos = randomposition();
-	        System.out.println("calculating idle movement for AI");
 	        isMoving = true;
     	}
         if (isMoving) {
