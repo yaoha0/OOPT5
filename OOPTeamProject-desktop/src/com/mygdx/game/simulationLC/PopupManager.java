@@ -1,7 +1,6 @@
 package simulationLC;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -77,7 +76,7 @@ public class PopupManager {
     }
 
     public boolean isPopupVisible() {
-        // so that my playscreen can access
+        // so that my PlayScreen can access
         return isPopupVisible;
     }
 
