@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
@@ -33,10 +35,13 @@ public class PlayScreen implements Screen {
     private PlayerControlManager playerControlManager;
     private InputOutputManager inputOutputManager;
     private PopupManager popupManager;
-
+    private BitmapFont font;
+    private Texture collectibleTexture;
 
     public PlayScreen(SpriteBatch batch) {
         this.batch = batch;
+        font = new BitmapFont();
+        font.getData().setScale(3);
         initialize();
     }
 
@@ -53,8 +58,10 @@ public class PlayScreen implements Screen {
         // Instantiate game entities
         player = new Player("entity/player/cat_fighter_sprite0.png", 100, 100, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
-        enemy = new Enemy("entity/enemy/mon1_sprite.png", 500, 100, 150, 150);
-
+        enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
+        
+        collectibleTexture = new Texture("entity/objects/gemRed.png");
+        
         // Add entities to the entity manager
         entityManager.addEntity(player);
         entityManager.addEntity(collectible);
@@ -63,7 +70,7 @@ public class PlayScreen implements Screen {
 
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
-
+ 
         // Initialize SimulationLifecycle instance
         simulationLifeCycle = new SimulationLifeCycle();
 
@@ -93,6 +100,9 @@ public class PlayScreen implements Screen {
         batch.begin();
         // Put ellipsis at top right
         batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+        
+        String countNumber = String.valueOf(collisionManager.getCollectibleCount());
+        font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
         batch.end();
 
         // Handle input and render popup

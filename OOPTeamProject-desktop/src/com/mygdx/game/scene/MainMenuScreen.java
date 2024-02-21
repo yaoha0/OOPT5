@@ -33,9 +33,12 @@ public class MainMenuScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		int center_x = (800 - START_WIDTH) / 2;
+		int center_y = (600 - START_HEIGHT) / 2;
+		
 		ScreenUtils.clear(100, 100, 100, 1);
 		game.batch.begin();
-		game.batch.draw(startButton, 220, 140, START_WIDTH,START_HEIGHT);
+		game.batch.draw(startButton, center_x, center_y, START_WIDTH,START_HEIGHT);
 		game.batch.end();
 		// Check for input events
         if (Gdx.input.justTouched()) {
@@ -43,7 +46,7 @@ public class MainMenuScreen implements Screen {
             int y = Gdx.graphics.getHeight() - Gdx.input.getY();
             
             // Check if the start button is clicked
-            if (x >= 220 && x <= 220 + START_WIDTH && y >= 140 && y <= 140 + START_HEIGHT) {
+            if (x >= center_x && x <= center_x + START_WIDTH && y >= center_y && y <= center_y + START_HEIGHT) {
                 // Transition to the play screen
             	this.dispose();
                 screenManager.showPlayScreen();
