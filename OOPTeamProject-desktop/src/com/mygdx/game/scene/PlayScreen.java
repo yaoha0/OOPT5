@@ -41,8 +41,10 @@ public class PlayScreen implements Screen {
     }
 
     private void initialize() {
+    	// initialize 
         entityManager = new EntityManager();
-        collisionManager = new CollisionManager(entityManager);
+        ScreenManager screenManager = ScreenManager.getInstance();
+        collisionManager = new CollisionManager(entityManager, screenManager);
 
         // Set up the camera
         camera = new OrthographicCamera();
@@ -58,6 +60,7 @@ public class PlayScreen implements Screen {
         entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
 
+
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -69,14 +72,13 @@ public class PlayScreen implements Screen {
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Initialize AI control manager
-        aicontrolManager = new AiControlManager(2, 80, decisionMaking);
+        aicontrolManager = new AiControlManager(2, 200, decisionMaking);
         playerControlManager = new PlayerControlManager(player,this);
-        // Initialize popupManager
-        popupManager = new PopupManager(batch, simulationLifeCycle);
-        inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
+        inputOutputManager = new InputOutputManager(playerControlManager);
         Gdx.input.setInputProcessor(inputOutputManager);
 
-        
+        // Initialize popupManager
+        popupManager = new PopupManager(batch, simulationLifeCycle);
     }
 
     @Override
@@ -94,10 +96,17 @@ public class PlayScreen implements Screen {
         batch.end();
 
         // Handle input and render popup
-        //popupManager.handleInput(ellipsis);
+        popupManager.handleInput(ellipsis);
         popupManager.render();
 
-        
+        // Check for Escape key press to resume game
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            if (popupManager.isPopupVisible()) {
+                // Only resume if popup is visible
+                popupManager.resumeGame();
+                System.out.println("Game resumed."); // Resume the game
+            }
+        }
 
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
