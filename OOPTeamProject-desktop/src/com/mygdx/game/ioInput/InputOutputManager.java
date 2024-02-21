@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputProcessor;
 
 import playerControl.PlayerControlManager;
 import simulationLC.PopupManager;
-import simulationLC.SimulationLifeCycle;
 import simulationLC.Ellipsis;
 
 public class InputOutputManager implements InputProcessor {
@@ -42,7 +41,7 @@ public class InputOutputManager implements InputProcessor {
                 
             case Input.Keys.ESCAPE:
             	if (popupManager.isPopupVisible()) {
-                    // Only resume if popup is visible
+                    // Only resume if PopUp is visible
                     popupManager.resumeGame();
                     System.out.println("Game resumed."); // Resume the game
                     break;
@@ -126,7 +125,7 @@ public class InputOutputManager implements InputProcessor {
             } else if (isExitButtonClicked(touchX, touchY)) {
                 popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
             }
-            return true; // Consume the touch event if it's within the popup
+            return true; // Consume the touch event if it's within the PopUp
         }
               
         
