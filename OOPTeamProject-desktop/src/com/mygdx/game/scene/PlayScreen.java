@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -36,7 +35,6 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PopupManager popupManager;
     private BitmapFont font;
-    private Texture collectibleTexture;
 
     public PlayScreen(SpriteBatch batch) {
         this.batch = batch;
@@ -60,8 +58,6 @@ public class PlayScreen implements Screen {
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
         enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
         
-        collectibleTexture = new Texture("entity/objects/gemRed.png");
-        
         // Add entities to the entity manager
         entityManager.addEntity(player);
         entityManager.addEntity(collectible);
@@ -74,6 +70,9 @@ public class PlayScreen implements Screen {
         // Initialize SimulationLifecycle instance
         simulationLifeCycle = new SimulationLifeCycle();
 
+        // Initialize popupManager
+        popupManager = new PopupManager(batch, simulationLifeCycle);
+        
         // Initialize decision making components
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
@@ -81,11 +80,10 @@ public class PlayScreen implements Screen {
         // Initialize AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking);
         playerControlManager = new PlayerControlManager(player,this);
-        inputOutputManager = new InputOutputManager(playerControlManager);
+        inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
         Gdx.input.setInputProcessor(inputOutputManager);
 
-        // Initialize popupManager
-        popupManager = new PopupManager(batch, simulationLifeCycle);
+
     }
 
     @Override
@@ -105,14 +103,13 @@ public class PlayScreen implements Screen {
         font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
         batch.end();
 
-        // Handle input and render popup
-        popupManager.handleInput(ellipsis);
+        // Handle input and render PopUp
         popupManager.render();
 
         // Check for Escape key press to resume game
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             if (popupManager.isPopupVisible()) {
-                // Only resume if popup is visible
+                // Only resume if PopUp is visible
                 popupManager.resumeGame();
                 System.out.println("Game resumed."); // Resume the game
             }
