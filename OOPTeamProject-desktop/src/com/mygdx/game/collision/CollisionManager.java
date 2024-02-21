@@ -3,31 +3,22 @@ package collision;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import entity.*;
-
+import com.badlogic.gdx.utils.Array; 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionManager {
 	private EntityManager entityManager;
-    private List<Entity> entities;
     private int Collectiblecount;
 
     public CollisionManager(EntityManager entityManager) {
     	this.entityManager = entityManager;
     	this.Collectiblecount = 0;
-    	entities = new ArrayList<>();
     }
 
-    public void addEntity(Entity entity) {
-        entities.add(entity);
-        System.out.println(entities.size());
-    }
-
-    public void removeEntity(Entity entity) {
-        entities.remove(entity);
-    }
     //checks if any objects are colliding, and handles them appropriately.
     public void checkCollisions() {
+    	Array<Entity> entities = entityManager.getEntities(); // Retrieve entities from EntityManager
         for (int i = 0; i < entities.size(); i++) {
             for (int j = i + 1; j < entities.size(); j++) {
                 if (isColliding(entities.get(i), entities.get(j))) {
@@ -50,7 +41,6 @@ public class CollisionManager {
         if ((obj1 instanceof Player && obj2 instanceof Collectible) || (obj1 instanceof Collectible && obj2 instanceof Player)) {
             System.out.println("Player has collided with Collectible");
             entityManager.removeEntity(obj1 instanceof Collectible ? obj1 : obj2); // Remove collectible from EntityManager
-            removeEntity(obj1 instanceof Collectible ? obj1 : obj2);
             Collectiblecount += 1;
             System.out.println("Player has collected " + Collectiblecount + " collectibles");
         } else if (obj1 instanceof Player && obj2 instanceof Enemy || obj1 instanceof Enemy && obj2 instanceof Player) {

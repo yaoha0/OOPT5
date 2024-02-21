@@ -58,11 +58,6 @@ public class PlayScreen implements Screen {
         entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
 
-        // Add entities to the collision manager
-        collisionManager.addEntity(player);
-        collisionManager.addEntity(collectible);
-        collisionManager.addEntity(enemy);
-
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
