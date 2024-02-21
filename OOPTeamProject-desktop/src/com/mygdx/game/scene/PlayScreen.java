@@ -76,11 +76,12 @@ public class PlayScreen implements Screen {
         // Initialize AI control manager
         aicontrolManager = new AiControlManager(2, 80, decisionMaking);
         playerControlManager = new PlayerControlManager(player,this);
-        inputOutputManager = new InputOutputManager(playerControlManager);
-        Gdx.input.setInputProcessor(inputOutputManager);
-
         // Initialize popupManager
         popupManager = new PopupManager(batch, simulationLifeCycle);
+        inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
+        Gdx.input.setInputProcessor(inputOutputManager);
+
+        
     }
 
     @Override
@@ -98,17 +99,10 @@ public class PlayScreen implements Screen {
         batch.end();
 
         // Handle input and render popup
-        popupManager.handleInput(ellipsis);
+        //popupManager.handleInput(ellipsis);
         popupManager.render();
 
-        // Check for Escape key press to resume game
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            if (popupManager.isPopupVisible()) {
-                // Only resume if popup is visible
-                popupManager.resumeGame();
-                System.out.println("Game resumed."); // Resume the game
-            }
-        }
+        
 
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
