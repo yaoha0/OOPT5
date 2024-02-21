@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package scene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -6,9 +6,18 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+import aiControl.*;
+import collision.CollisionManager;
+import entity.*;
+import ioInput.InputOutputManager;
+import playerControl.PlayerControlManager;
+import simulationLC.*;
 
 public class PlayScreen implements Screen {
     private SpriteBatch batch;
+    private ShapeRenderer shape;
     private EntityManager entityManager;
     private Player player;
     private Enemy enemy;
@@ -104,7 +113,7 @@ public class PlayScreen implements Screen {
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
         playerControlManager.update(Gdx.graphics.getDeltaTime());
-        entityManager.renderShape();
+        entityManager.renderShape(shape);
         entityManager.renderBatch(batch);
         collisionManager.checkCollisions();
         aicontrolManager.updateAI(enemy, player);
