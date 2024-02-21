@@ -19,5 +19,7 @@ public class GameMaster extends Game {
     	screenManager = ScreenManager.getInstance();
     	screenManager.initialize(this);
     	screenManager.showMainScreen();
+    	playScreen = new PlayScreen(batch);
+    	endScreen = new EndScreen(batch, simulationLifeCycle);
     }
 }
