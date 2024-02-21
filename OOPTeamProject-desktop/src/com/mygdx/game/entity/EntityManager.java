@@ -19,6 +19,10 @@ public class EntityManager {
         entities.removeValue(entity, true);
     }
 
+    public Array<Entity> getEntities() {
+        return new Array<>(entities);
+    }
+
     public void update(float deltaTime) {
         for (Entity entity : entities) {
             entity.update(deltaTime);
