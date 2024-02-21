@@ -8,12 +8,17 @@ import com.badlogic.gdx.utils.Array;
 public class CollisionManager {
 	private EntityManager entityManager;
 	private ScreenManager screenManager;
-    private int Collectiblecount;
+    private int collectibleCount;
 
     public CollisionManager(EntityManager entityManager, ScreenManager screenManager) {
     	this.entityManager = entityManager;
     	this.screenManager = screenManager;
-    	this.Collectiblecount = 0;
+    	this.collectibleCount = 0;
+    }
+    
+    public int getCollectibleCount() {
+        // Assuming collectibleCount is the variable tracking the count
+        return collectibleCount;
     }
 
     //checks if any objects are colliding, and handles them appropriately.
@@ -41,7 +46,7 @@ public class CollisionManager {
     public void handleCollision(Entity obj1, Entity obj2) {
         if ((obj1 instanceof Player && obj2 instanceof Collectible) || (obj1 instanceof Collectible && obj2 instanceof Player)) {
             entityManager.removeEntity(obj1 instanceof Collectible ? obj1 : obj2); // Remove collectible from EntityManager
-            Collectiblecount += 1;
+            collectibleCount += 1;
             //System.out.println("Player has collected " + Collectiblecount + " collectibles");
         } else if (obj1 instanceof Player && obj2 instanceof Enemy || obj1 instanceof Enemy && obj2 instanceof Player) {
             screenManager.showEndScreen();
