@@ -4,13 +4,19 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import scene.EndScreen;
+import scene.PlayScreen;
 import scene.ScreenManager;
+import simulationLC.SimulationLifeCycle;
 
 public class GameMaster extends Game {
 	
 	public SpriteBatch batch;
 	public ShapeRenderer shape;
-	ScreenManager screenManager;
+	public ScreenManager screenManager;
+	public PlayScreen playScreen;
+	public EndScreen endScreen;
+	public SimulationLifeCycle simulationLifeCycle;
 	
     @Override
     public void create() {
@@ -19,7 +25,7 @@ public class GameMaster extends Game {
     	screenManager = ScreenManager.getInstance();
     	screenManager.initialize(this);
     	screenManager.showMainScreen();
-    	playScreen = new PlayScreen(batch);
+      	playScreen = new PlayScreen(batch);
     	endScreen = new EndScreen(batch, simulationLifeCycle);
     }
 }
