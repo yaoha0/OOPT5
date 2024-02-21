@@ -1,6 +1,5 @@
 package simulationLC;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Ellipsis {

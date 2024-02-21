@@ -8,7 +8,6 @@ public class PlayerControlManager {
 	private PlayScreen playScreen; // Reference to PlayScreen
     private float speed = 2.5f; // Adjust speed as necessary
     private float jumpVelocity = 50.0f; // Adjust jump velocity as necessary
-    private boolean isPaused = false;
     private boolean movingLeft = false;
     private boolean movingRight = false;
     private float gravity = -25f; // Negative value for downward gravity
