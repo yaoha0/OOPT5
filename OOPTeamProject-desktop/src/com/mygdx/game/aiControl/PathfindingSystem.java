@@ -19,7 +19,7 @@ public class PathfindingSystem {
     	}
         if (isMoving) {
         	//Moves ai to the calculated position
-        	if (randomXpos < ai.getX() - 5 || randomXpos == ai.getX() || randomXpos > ai.getX() + 5) {
+        	if (randomXpos == ai.getX()) {
         		isMoving = false;
         	}
         	else {
