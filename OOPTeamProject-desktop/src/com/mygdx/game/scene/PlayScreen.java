@@ -1,6 +1,5 @@
 package scene;
 
-// GDX Libraries imports
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -10,13 +9,13 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-// Management Packages imports
 import aiControl.*;
 import collision.CollisionManager;
 import entity.*;
 import ioInput.InputOutputManager;
 import playerControl.PlayerControlManager;
 import simulationLC.*;
+import com.mygdx.game.GameMaster;
 
 public class PlayScreen implements Screen {
     // attributes
@@ -47,6 +46,7 @@ public class PlayScreen implements Screen {
         this.batch = batch;
         font = new BitmapFont();
         font.getData().setScale(3);
+        simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance()); // Pass the GameMaster instance to the SimulationLifeCycle constructor
         initialize();
     }
 
@@ -55,7 +55,7 @@ public class PlayScreen implements Screen {
         camera = new OrthographicCamera();
 
         // simulation lifecycle manager
-        simulationLifeCycle = new SimulationLifeCycle();
+        simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
 
         // entity manager
         entityManager = new EntityManager();
@@ -74,14 +74,6 @@ public class PlayScreen implements Screen {
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
 
-        // AI control manager
-        aicontrolManager = new AiControlManager(1, 200, decisionMaking);
-        playerControlManager = new PlayerControlManager(player,this);
-
-        // I/O manager
-        inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
-        Gdx.input.setInputProcessor(inputOutputManager);
-
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -92,6 +84,14 @@ public class PlayScreen implements Screen {
         
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
+
+        // AI control manager
+        aicontrolManager = new AiControlManager(2, 200, decisionMaking);
+        playerControlManager = new PlayerControlManager(player,this);
+
+        // I/O manager
+        inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
+        Gdx.input.setInputProcessor(inputOutputManager);
 
         // Add entities to the entity manager
         entityManager.addEntity(player);

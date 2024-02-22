@@ -1,11 +1,18 @@
 package scene;
 import com.mygdx.game.GameMaster;
+
+import simulationLC.SimulationLifeCycle;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 
 
 public class ScreenManager {
     private static ScreenManager instance;
-    GameMaster game;
+    private GameMaster game;
+    private SpriteBatch batch;
+    private SimulationLifeCycle simulationLifeCycle;
+    private MainMenuScreen mainMenuScreen; // Add this line
 
     private ScreenManager() {}
 
@@ -16,12 +23,19 @@ public class ScreenManager {
         return instance;
     }
 
-    public void initialize(GameMaster game) {
+    public void initialize(GameMaster game, SpriteBatch batch, SimulationLifeCycle simulationLifeCycle) {
         this.game = game;
+        this.batch = batch;
+        this.simulationLifeCycle = simulationLifeCycle;
+        this.mainMenuScreen = new MainMenuScreen(game); // Initialize the MainMenuScreen here
+    }
+
+    public MainMenuScreen getMainMenuScreen() { // Add this method to get the MainMenuScreen
+        return mainMenuScreen;
     }
 
     public void showMainScreen() {
-        game.setScreen(new MainMenuScreen(game));
+        game.setScreen(mainMenuScreen);
     }
 
     public void showPlayScreen() {
@@ -29,6 +43,6 @@ public class ScreenManager {
     }
 
     public void showEndScreen() {
-        game.setScreen(new EndScreen());
+        game.setScreen(new EndScreen(batch, simulationLifeCycle));
     }
 }
