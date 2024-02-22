@@ -39,8 +39,8 @@ public class GameMaster extends Game {
 	    screenManager.initialize(this, batch, simulationLifeCycle); // Make sure MainMenuScreen is initialized inside this method
 	    playScreen = new PlayScreen(batch);
 	    endScreen = new EndScreen(batch, simulationLifeCycle);
-	    // Now that everything is initialized, show the main screen.
-	    screenManager.showMainScreen();
+		//tell the SLC to start game, then it calls the mainscreen
+	    simulationLifeCycle.startGame(); 
 	}
     
     
