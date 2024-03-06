@@ -36,10 +36,12 @@ public class GameMaster extends Game {
 	    shape = new ShapeRenderer();
 	    simulationLifeCycle = new SimulationLifeCycle(this); // Pass 'this' as the GameMaster instance
 	    screenManager = ScreenManager.getInstance();
+	    
 	    screenManager.initialize(this, batch, simulationLifeCycle); // Make sure MainMenuScreen is initialized inside this method
-	    playScreen = new PlayScreen(batch);
-	    endScreen = new EndScreen(batch, simulationLifeCycle);
-		//tell the SLC to start game, then it calls the mainscreen
+	    /* commented out the code below because it was calling initialize twice*/
+	    //playScreen = new PlayScreen(batch);
+	    //endScreen = new EndScreen(batch, simulationLifeCycle);
+	    //tell the SLC to start game, then it calls the mainscreen
 	    simulationLifeCycle.startGame(); 
 	}
     
