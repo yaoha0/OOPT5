@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import aiControl.*;
 import collision.CollisionManager;
@@ -22,7 +21,6 @@ public class PlayScreen implements Screen {
     private BitmapFont font;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private ShapeRenderer shape;
     private Player player;
     private Enemy enemy;
     private Collectible collectible;
@@ -58,13 +56,14 @@ public class PlayScreen implements Screen {
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
 
         // entity manager
-        entityManager = new EntityManager();
+        entityManager = EntityManager.getInstance();
+        //entityManager = new EntityManager();
 
         // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
 
         // collision manager
-        collisionManager = new CollisionManager(entityManager, screenManager);
+        collisionManager = new CollisionManager(screenManager);
 
         // popUp manager
         popupManager = new PopupManager(batch, simulationLifeCycle);
@@ -73,14 +72,19 @@ public class PlayScreen implements Screen {
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
-
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+        
         // Instantiate game entities
-        player = new Player("entity/player/cat_fighter_sprite0.png", 100, 100, 150, 150);
+        player = new Player("entity/player/cat_fighter_sprite0.png", 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
         enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
+        // Add entities to the entity manager
+        entityManager.addEntity(player);
+        //entityManager.addEntity(collectible);
+        entityManager.addEntity(enemy);
+        spawnCollectibles();
+        
         
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
@@ -93,10 +97,7 @@ public class PlayScreen implements Screen {
         inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
         Gdx.input.setInputProcessor(inputOutputManager);
 
-        // Add entities to the entity manager
-        entityManager.addEntity(player);
-        entityManager.addEntity(collectible);
-        entityManager.addEntity(enemy);
+
     }
 
     @Override
@@ -109,6 +110,7 @@ public class PlayScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
+        	entityManager.renderBatch(batch);
             // Put ellipsis at top right
             batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
         
@@ -131,12 +133,33 @@ public class PlayScreen implements Screen {
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
         playerControlManager.update(Gdx.graphics.getDeltaTime());
-        entityManager.renderShape(shape);
-        entityManager.renderBatch(batch);
         collisionManager.checkCollisions();
         aicontrolManager.updateAI(enemy, player);
-    }
+        
 
+    }
+    
+    public void spawnCollectibles() {
+        float fixedX = 100; // Fixed x-axis position
+        float minX = 0; // Minimum y-axis position
+        float maxX = 799; // Maximum y-axis position
+        int maxCollectibles = 3; // Maximum number of collectibles
+
+        // Clear existing collectibles
+        EntityManager.getInstance().removeCollectible();
+
+        for (int i = 0; i < maxCollectibles; i++) {
+            // Generate a random y-axis position within the specified range
+        	float randomX = (float) (Math.random() * (maxX - minX) + minX);
+
+            // Spawn a collectible at the random position
+            //collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
+            collectible = new Collectible("entity/objects/gemRed.png", randomX, 100, 100, 100);
+            entityManager.addEntity(collectible);
+        }
+    }
+    
+    
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
