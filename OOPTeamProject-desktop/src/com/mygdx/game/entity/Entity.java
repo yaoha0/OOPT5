@@ -1,16 +1,19 @@
 package entity;
-import java.lang.Thread.State;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public abstract class Entity {
 	protected float x, y, width, height;
 	protected Texture texture;
 
 	public Entity(String texturePath, float x, float y, float width, float height) {
-		//this.texture = new Texture(texturePath);
+	    if (texturePath != null && Gdx.files.internal(texturePath).exists()) {
+	        this.texture = new Texture(texturePath);
+	    } else {
+	        System.out.println("Texture file not found or path is null: " + texturePath);
+	    }
         this.x = x;
     	this.y = y;
         this.width = width;
@@ -19,12 +22,15 @@ public abstract class Entity {
 	
 	public abstract void update(float deltaTime);
 	
-    public abstract void render(ShapeRenderer shape);
-    public abstract void render(SpriteBatch batch);
-    
-    // entity class handles its own dispose
+	public void render(SpriteBatch batch) {
+		
+	    if (texture != null) {
+	        batch.draw(texture, x, y, width, height);
+	    }
+	}
+
     public void dispose() {
-    	if(texture != null) texture.dispose();
+        if(texture != null) texture.dispose();
     }
     
     // Getter methods
