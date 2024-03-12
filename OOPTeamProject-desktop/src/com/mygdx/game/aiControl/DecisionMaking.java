@@ -31,6 +31,9 @@ public class DecisionMaking {
     	if (target.getX() > ai.getX()) {
     		ai.setX(ai.getX() + speed);
     	}
+        if (ai.getY() > 0){
+            ai.setY(ai.getY() - speed);
+        }
     }
 
 }
