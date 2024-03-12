@@ -16,6 +16,9 @@ public class SimulationLifeCycle {
     public void startGame() {
         gameMaster.setScreen(gameMaster.screenManager.getMainMenuScreen());
     }
+        public void nextLevel(int collectibleCount){
+        // You can now use collectibleCount inside this method
+    }
     public void pauseGame() {
         // the pausing is done playercontrolmanager in the update function
         isPaused = true;
