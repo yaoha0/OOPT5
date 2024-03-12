@@ -34,7 +34,7 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PlayerControlManager playerControlManager;
     private PopupManager popupManager;
-    
+
     // Class attributes
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
@@ -49,7 +49,7 @@ public class PlayScreen implements Screen {
     }
 
     private void initialize() {
-    	// initialize 
+        // initialize
         camera = new OrthographicCamera();
 
         // simulation lifecycle manager
@@ -63,7 +63,7 @@ public class PlayScreen implements Screen {
         ScreenManager screenManager = ScreenManager.getInstance();
 
         // collision manager
-        collisionManager = new CollisionManager(screenManager);
+        collisionManager = new CollisionManager(screenManager, entityManager);
 
         // popUp manager
         popupManager = new PopupManager(batch, simulationLifeCycle);
@@ -74,7 +74,7 @@ public class PlayScreen implements Screen {
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        
+
         // Instantiate game entities
         player = new Player("entity/player/cat_fighter_sprite0.png", 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
@@ -84,8 +84,8 @@ public class PlayScreen implements Screen {
         //entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
         spawnCollectibles();
-        
-        
+
+
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -110,12 +110,12 @@ public class PlayScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        	entityManager.renderBatch(batch);
-            // Put ellipsis at top right
-            batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-        
-            String countNumber = String.valueOf(collisionManager.getCollectibleCount());
-            font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
+        entityManager.renderBatch(batch);
+        // Put ellipsis at top right
+        batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+
+        String countNumber = String.valueOf(collisionManager.getCollectibleCount());
+        font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
         batch.end();
 
         // Handle input and render PopUp
@@ -135,10 +135,13 @@ public class PlayScreen implements Screen {
         playerControlManager.update(Gdx.graphics.getDeltaTime());
         collisionManager.checkCollisions();
         aicontrolManager.updateAI(enemy, player);
-        
 
+        // Check if all collectibles have been collected
+        if (collisionManager.getCollectibleCount() == 3) {
+            simulationLifeCycle.nextLevel(collisionManager.getCollectibleCount());
+        }
     }
-    
+
     public void spawnCollectibles() {
         float fixedX = 100; // Fixed x-axis position
         float minX = 0; // Minimum y-axis position
@@ -150,7 +153,7 @@ public class PlayScreen implements Screen {
 
         for (int i = 0; i < maxCollectibles; i++) {
             // Generate a random y-axis position within the specified range
-        	float randomX = (float) (Math.random() * (maxX - minX) + minX);
+            float randomX = (float) (Math.random() * (maxX - minX) + minX);
 
             // Spawn a collectible at the random position
             //collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
@@ -158,8 +161,8 @@ public class PlayScreen implements Screen {
             entityManager.addEntity(collectible);
         }
     }
-    
-    
+
+
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
@@ -187,4 +190,3 @@ public class PlayScreen implements Screen {
         popupManager.dispose();
         ellipsis.dispose();
     }
-}
