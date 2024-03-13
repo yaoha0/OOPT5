@@ -44,7 +44,8 @@ public class PlayScreen implements Screen {
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
     private DecisionMaking decisionMaking;
-
+    private ArrayList<Float> holePositions; // Add this attribute
+    private ArrayList<Platform> platforms; // Add this to store platform tiles
     public PlayScreen(SpriteBatch batch) {
         this.batch = batch;
         font = new BitmapFont();
@@ -67,8 +68,7 @@ public class PlayScreen implements Screen {
         // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
 
-        // collision manager
-        collisionManager = new CollisionManager(screenManager);
+
 
         // popUp manager
         popupManager = new PopupManager(batch, simulationLifeCycle);
@@ -84,15 +84,19 @@ public class PlayScreen implements Screen {
         player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
         enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
-        
+
+        this.holePositions = new ArrayList<Float>();
+        this.platforms = new ArrayList<Platform>();
         // Add entities to the entity manager
         entityManager.addEntity(player);
         //entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
         spawnCollectibles();
         createFloor();
-        
-        
+
+        // collision manager
+        collisionManager = new CollisionManager(screenManager, holePositions, platforms);
+
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -137,13 +141,11 @@ public class PlayScreen implements Screen {
             }
         }
 
-        // Check for collisions between the player and platforms
-        //collisionManager.handlePlatformCollisions(player);
 
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
         playerControlManager.update(Gdx.graphics.getDeltaTime());
-        collisionManager.checkCollisions();
+        collisionManager.updateCollisions();
         aicontrolManager.updateAI(enemy, player);
 
         // Check if all collectibles have been collected
@@ -153,6 +155,8 @@ public class PlayScreen implements Screen {
     }
 
     public void createFloor() {
+        this.holePositions.clear();
+
         float screenWidth = Gdx.graphics.getWidth();
         float groundPlatformHeight = 50; // Height of the ground platform
         float platformWidth = 50; // Width of each platform tile
@@ -165,7 +169,7 @@ public class PlayScreen implements Screen {
         // Adjusted for the width of the safe zones at the beginning and the end
         float middleSectionWidth = screenWidth - (initialSafeTiles + finalSafeTiles) * platformWidth;
 
-        ArrayList<Float> holePositions = new ArrayList<Float>();
+        //ArrayList<Float> holePositions = new ArrayList<Float>();
 
         // Create the initial safe ground tiles
         for (float xPosition = 0; xPosition < initialSafeTiles * platformWidth; xPosition += platformWidth) {
@@ -176,7 +180,7 @@ public class PlayScreen implements Screen {
         // Create ground platforms with holes in the middle section
         for (float xPosition = initialSafeTiles * platformWidth; xPosition < screenWidth - finalSafeTiles * platformWidth; xPosition += platformWidth) {
             if (MathUtils.randomBoolean()) { // Adjust the chance for a hole as needed
-                holePositions.add(xPosition);
+                this.holePositions.add(xPosition);
                 continue;
             }
             Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
@@ -190,11 +194,14 @@ public class PlayScreen implements Screen {
         }
 
         // Create elevated platforms directly above the holes
-        for (Float holeX : holePositions) {
+        for (Float holeX : this.holePositions) {
             float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform; // Fixed 50 pixels above the ground
             Platform elevatedPlatform = new Platform("entity/objects/grass.png", holeX, elevationHeight, platformWidth, groundPlatformHeight);
+            platforms.add(elevatedPlatform); // Add to the list
             EntityManager.getInstance().addEntity(elevatedPlatform);
         }
+
+
     }
 
 
