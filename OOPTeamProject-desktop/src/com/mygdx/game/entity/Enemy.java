@@ -1,6 +1,5 @@
 package entity;
 
-
 public class Enemy extends Entity{
 
     public Enemy(String texturePath, float x, float y, float width, float height) {
