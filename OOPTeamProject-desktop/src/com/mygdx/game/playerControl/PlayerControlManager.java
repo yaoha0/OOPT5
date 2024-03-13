@@ -7,12 +7,13 @@ public class PlayerControlManager {
 	private Player player;
 	private PlayScreen playScreen; // Reference to PlayScreen
     private float speed = 2.5f; // Adjust speed as necessary
-    private float jumpVelocity = 50.0f; // Adjust jump velocity as necessary
+    private float jumpVelocity = 70.0f; // Adjust jump velocity as necessary
     private boolean movingLeft = false;
     private boolean movingRight = false;
     private float gravity = -25f; // Negative value for downward gravity
-
-
+    public static final float PIT_LEVEL = -100;
+    public static final float GROUND_LEVEL = 0;
+    private boolean isJumpingPressed = false; // Tracks if the jump key is being pressed
     public PlayerControlManager(Player player, PlayScreen playScreen) {
         this.player = player;
         this.playScreen = playScreen;
@@ -27,10 +28,16 @@ public class PlayerControlManager {
 
     public void makePlayerJump() {
         if (!playScreen.getSimulationLifeCycle().isPaused() && player.getIsOnGround()) {
+            isJumpingPressed = true; // Jump key is pressed
             player.setVelocityY(jumpVelocity);
-            player.setOnGround(false);
-            player.setIsJumping(true); // This is correct
+            player.setIsOnGround(false);
+            player.setIsJumping(true);
         }
+    }
+
+    // Call this from InputOutputManager when the jump key is released
+    public void onJumpKeyReleased() {
+        isJumpingPressed = false; // Jump key is released
     }
 
 
@@ -47,30 +54,41 @@ public class PlayerControlManager {
                 player.setIsWalking(false); // Set to false when not moving
             }
 
-// Apply gravity if not on the ground
-            System.out.println(player.getIsOnGround());
-            if (!player.getIsOnGround()) {
-                float newYVelocity = player.getVelocityY() + gravity * deltaTime;
+
+            // Apply gravity every frame if the player is not on the ground or if they have fallen
+            if (!player.getIsOnGround() || player.getHasFallen()) {
+                float newYVelocity = player.getVelocityY() + gravity * deltaTime; // Apply gravity
                 player.setVelocityY(newYVelocity);
-                player.setY(player.getY() + newYVelocity * deltaTime);
+                player.setY(player.getY() + newYVelocity * deltaTime); // Update the player's Y position
+
+                // If the jump key is released and the player is moving upwards, cut the jump short
+                /*if (!isJumpingPressed && newYVelocity > 0) {
+                    player.setVelocityY(newYVelocity * 0.5f); // Apply a factor to reduce the jump height
+                }*/
             }
 
-            // Check for landing
-            if (player.getY() <= 0) {
-                //System.out.println("entered");
-                player.setY(0); // Set the player's y position to the ground level
-                player.setOnGround(true);
-                player.setVelocityY(0);
+            // Check for landing on the ground, but only if the player has not fallen through a hole
+            if (player.getY() <= 0 && !player.getHasFallen()) {
+                player.setY(0); // Correct the player's Y position to the ground level
+                player.setIsOnGround(true); // The player is on the ground
+                player.setVelocityY(0); // Stop the downward velocity
 
-                // Debug output
-                //System.out.println("Animation state time: " + player.getAnimationHandler().getStateTime());
-                //System.out.println("Is Jump Animation Finished: " + player.getAnimationHandler().isJumpAnimationFinished());
-
-                // Check if the jump animation is finished
+                // If the jump animation is finished, the player is no longer jumping
                 if (player.getAnimationHandler().isJumpAnimationFinished()) {
                     player.setIsJumping(false);
                 }
             }
+
+            // If the player has fallen, check if they have reached the pit level
+            if (player.getHasFallen() && player.getY() <= Player.PIT_LEVEL) {
+                player.setY(Player.PIT_LEVEL); // Place the player at the pit level
+                player.setHasFallen(false); // The player has finished falling
+                // The player is not on the ground if they've fallen into a pit
+                player.setIsOnGround(false); // You'll need to set this to true if there's a bottom platform in the pit
+                player.setVelocityY(0); // Reset the velocity
+            }
+
+
         }
     }
 
@@ -95,4 +113,6 @@ public class PlayerControlManager {
             }
         }
     }
+
+    public float getGravity() { return this.gravity; }
 }
