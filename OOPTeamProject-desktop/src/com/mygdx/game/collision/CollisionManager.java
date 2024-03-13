@@ -1,26 +1,43 @@
 package collision;
 
+import com.badlogic.gdx.math.Rectangle;
 import entity.*;
 import scene.ScreenManager;
 
-import com.badlogic.gdx.utils.Array; 
+import com.badlogic.gdx.utils.Array;
+
+import java.util.ArrayList;
 
 public class CollisionManager {
     private ScreenManager screenManager;
     private int collectibleCount;
+    private ArrayList<Float> holePositions;
+    private ArrayList<Platform> platforms; // List of all platform tiles
 
-    public CollisionManager(ScreenManager screenManager) {
+    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms) {
         this.screenManager = screenManager;
         this.collectibleCount = 0;
+        this.holePositions = holePositions;
+        this.platforms = platforms;
     }
     
     public int getCollectibleCount() {
         return collectibleCount;
     }
 
-    public void checkCollisions() {
-        EntityManager entityManager = EntityManager.getInstance(); // Get singleton instance
-        Array<Entity> entities = entityManager.getEntities(); // Retrieve entities from EntityManager
+    public void updateCollisions() {
+        EntityManager entityManager = EntityManager.getInstance();
+        Array<Entity> entities = entityManager.getEntities();
+        Entity player = null;
+
+        // Find the player entity
+        for (Entity entity : entities) {
+            if (entity instanceof Player) {
+                player = entity;
+                break;
+            }
+        }
+
         for (int i = 0; i < entities.size; i++) {
             for (int j = i + 1; j < entities.size; j++) {
                 if (isColliding(entities.get(i), entities.get(j))) {
@@ -28,13 +45,38 @@ public class CollisionManager {
                 }
             }
         }
+
+        if (player != null) {
+            for (Platform platform : platforms) {
+                if (isEntityColliding(player, platform)) {
+                    Player p = (Player) player;
+                    handlePlatformCollision(p, platform);
+                    if (p.getVelocityY() < 0 && p.getY() > platform.getY() + platform.getHeight()) {
+                        // Correctly position the player on top of the platform
+                        p.land(platform.getY() + platform.getHeight());
+                        break; // Stop checking for more collisions
+                    }
+                    break; // Assume one collision at a time for simplicity
+                }
+            }
+            checkPlayerFall(player); // Check for falling off the platforms
+        }
     }
-    
+
+    public boolean isEntityColliding(Entity obj1, Entity obj2) {
+        Rectangle rect1 = new Rectangle(obj1.getX(), obj1.getY(), obj1.getWidth(), obj1.getHeight());
+        Rectangle rect2 = new Rectangle(obj2.getX(), obj2.getY(), obj2.getWidth(), obj2.getHeight());
+
+        System.out.println("Overlaps: " + rect1.overlaps(rect2));
+        return rect1.overlaps(rect2);
+    }
+
     public boolean isColliding(Entity obj1, Entity obj2) {
         float hitbox = (obj1.getWidth() + obj2.getHeight()) / 3;
         double distanceSquared = Math.pow(obj1.getX() - obj2.getX(), 2) + Math.pow(obj1.getY() - obj2.getY(), 2);
         double distance = Math.sqrt(distanceSquared);
         return distance <= hitbox;
+
     }
     
     public void handleCollision(Entity obj1, Entity obj2) {
@@ -47,38 +89,52 @@ public class CollisionManager {
         }
     }
 
-    /*public void handlePlatformCollisions(Player player) {
-        boolean onPlatform = false;
-        for (Entity e : EntityManager.getInstance().getEntities()) {
-            if (e instanceof Platform && isEntityAbovePlatform(player, (Platform) e)) {
-                alignEntityWithPlatform(player, (Platform) e);
-                onPlatform = true;
-                break; // Found a platform, no need to check further
+    // Method to handle platform collisions
+    private void handlePlatformCollision(Player player, Platform platform) {
+        // Get the rectangle for the platform's top surface where the player should land
+        Rectangle platformTopRect = new Rectangle(
+                platform.getX(), platform.getY() + platform.getHeight() - 1,
+                platform.getWidth(), 2 // Small thickness to represent the top surface
+        );
+
+        // Get the player's rectangle considering its current movement and position
+        Rectangle playerRect = new Rectangle(
+                player.getX(), player.getY() + player.getVelocityY(),
+                player.getWidth(), player.getHeight()
+        );
+
+        // Check if the player is falling and their bottom is colliding with the top surface of the platform
+        if (player.getVelocityY() < 0 && playerRect.overlaps(platformTopRect)) {
+            player.land(platform.getY() + platform.getHeight());
+        }
+    }
+
+    private void checkPlayerFall(Entity player) {
+        boolean isPlayerOnGround = true; // Initially assume the player is on the ground
+
+        // Assuming player's Y position at 0 means they are on the ground level
+        if (player.getY() > 0) {
+            isPlayerOnGround = false;
+        } else {
+            // Check if player is over a hole
+            for (Float holeX : holePositions) {
+                float playerMiddleX = player.getX() + player.getWidth() / 2;
+
+                if (playerMiddleX > holeX && playerMiddleX < holeX + 50) {
+                    // Player is within the horizontal bounds of a hole
+                    //System.out.println("Player has fallen.");
+                    //System.out.println("Player X: " + player.getX() + " Hole X: " + holeX);
+                    ((Player)player).fall();
+                    isPlayerOnGround = false;
+                    break; // No need to check other holes
+                }
             }
         }
-        if (!onPlatform) {
-            applyGravityToEntity(player);
+
+        if (isPlayerOnGround) {
+            //System.out.println("Player is on the ground.");
         }
     }
 
-    private boolean isEntityAbovePlatform(Player player, Platform platform) {
-        // Check if the player's bottom is within the platform's top boundaries
-        return player.getY() <= platform.getY() + platform.getHeight() && // bottom of player is at or above top of platform
-                player.getX() + player.getWidth() > platform.getX() && // right side of player is past left side of platform
-                player.getX() < platform.getX() + platform.getWidth(); // left side of player is before right side of platform
-    }
 
-    private void alignEntityWithPlatform(Player player, Platform platform) {
-        System.out.println("Platform top: " + (platform.getY() + platform.getHeight()));
-        System.out.println("Player bottom before align: " + player.getY());
-        //player.setY(0 + platform.getHeight()); // Set the player's Y to be on top of the platform
-        System.out.println("Player bottom after align: " + player.getY());
-        player.setOnGround(true); // Indicate that the player is on the ground
-    }
-
-    private void applyGravityToEntity(Player player) {
-        player.setOnGround(false); // Player is not on the ground
-        // Apply gravity to the player's Y velocity
-        player.setVelocityY(player.getVelocityY() - 9.81f); // gravityValue is a constant representing the gravity acceleration
-    }*/
 }
