@@ -5,16 +5,20 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import aiControl.*;
 import collision.CollisionManager;
+import com.badlogic.gdx.math.MathUtils;
 import entity.*;
 import ioInput.InputOutputManager;
 import playerControl.PlayerControlManager;
 import simulationLC.*;
 import com.mygdx.game.GameMaster;
+
+import java.util.ArrayList;
 
 public class PlayScreen implements Screen {
     // attributes
@@ -23,6 +27,7 @@ public class PlayScreen implements Screen {
     private SpriteBatch batch;
     private Player player;
     private Enemy enemy;
+    private Platform platform;
     private Collectible collectible;
     private Ellipsis ellipsis;
 
@@ -34,7 +39,7 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PlayerControlManager playerControlManager;
     private PopupManager popupManager;
-
+    
     // Class attributes
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
@@ -49,7 +54,7 @@ public class PlayScreen implements Screen {
     }
 
     private void initialize() {
-        // initialize
+    	// initialize 
         camera = new OrthographicCamera();
 
         // simulation lifecycle manager
@@ -63,7 +68,7 @@ public class PlayScreen implements Screen {
         ScreenManager screenManager = ScreenManager.getInstance();
 
         // collision manager
-        collisionManager = new CollisionManager(screenManager, entityManager);
+        collisionManager = new CollisionManager(screenManager);
 
         // popUp manager
         popupManager = new PopupManager(batch, simulationLifeCycle);
@@ -74,18 +79,20 @@ public class PlayScreen implements Screen {
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+        
         // Instantiate game entities
-        player = new Player("entity/player/cat_fighter_sprite0.png", 100, 0, 150, 150);
+        player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
         enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
+        
         // Add entities to the entity manager
         entityManager.addEntity(player);
         //entityManager.addEntity(collectible);
         entityManager.addEntity(enemy);
         spawnCollectibles();
-
-
+        createFloor();
+        
+        
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -110,12 +117,12 @@ public class PlayScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        entityManager.renderBatch(batch);
-        // Put ellipsis at top right
-        batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-
-        String countNumber = String.valueOf(collisionManager.getCollectibleCount());
-        font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
+        	entityManager.renderBatch(batch);
+            // Put ellipsis at top right
+            batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+        
+            String countNumber = String.valueOf(collisionManager.getCollectibleCount());
+            font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
         batch.end();
 
         // Handle input and render PopUp
@@ -130,6 +137,9 @@ public class PlayScreen implements Screen {
             }
         }
 
+        // Check for collisions between the player and platforms
+        //collisionManager.handlePlatformCollisions(player);
+
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
         playerControlManager.update(Gdx.graphics.getDeltaTime());
@@ -142,6 +152,52 @@ public class PlayScreen implements Screen {
         }
     }
 
+    public void createFloor() {
+        float screenWidth = Gdx.graphics.getWidth();
+        float groundPlatformHeight = 50; // Height of the ground platform
+        float platformWidth = 50; // Width of each platform tile
+        float spaceAboveGroundPlatform = 50; // Space above the ground platform where no elevated platform will be placed
+
+        // Number of initial and final tiles without holes
+        int initialSafeTiles = 4;
+        int finalSafeTiles = 3;
+
+        // Adjusted for the width of the safe zones at the beginning and the end
+        float middleSectionWidth = screenWidth - (initialSafeTiles + finalSafeTiles) * platformWidth;
+
+        ArrayList<Float> holePositions = new ArrayList<Float>();
+
+        // Create the initial safe ground tiles
+        for (float xPosition = 0; xPosition < initialSafeTiles * platformWidth; xPosition += platformWidth) {
+            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
+            EntityManager.getInstance().addEntity(groundPlatform);
+        }
+
+        // Create ground platforms with holes in the middle section
+        for (float xPosition = initialSafeTiles * platformWidth; xPosition < screenWidth - finalSafeTiles * platformWidth; xPosition += platformWidth) {
+            if (MathUtils.randomBoolean()) { // Adjust the chance for a hole as needed
+                holePositions.add(xPosition);
+                continue;
+            }
+            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
+            EntityManager.getInstance().addEntity(groundPlatform);
+        }
+
+        // Create the final safe ground tiles
+        for (float xPosition = screenWidth - finalSafeTiles * platformWidth; xPosition < screenWidth; xPosition += platformWidth) {
+            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
+            EntityManager.getInstance().addEntity(groundPlatform);
+        }
+
+        // Create elevated platforms directly above the holes
+        for (Float holeX : holePositions) {
+            float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform; // Fixed 50 pixels above the ground
+            Platform elevatedPlatform = new Platform("entity/objects/grass.png", holeX, elevationHeight, platformWidth, groundPlatformHeight);
+            EntityManager.getInstance().addEntity(elevatedPlatform);
+        }
+    }
+
+
     public void spawnCollectibles() {
         float fixedX = 100; // Fixed x-axis position
         float minX = 0; // Minimum y-axis position
@@ -153,7 +209,7 @@ public class PlayScreen implements Screen {
 
         for (int i = 0; i < maxCollectibles; i++) {
             // Generate a random y-axis position within the specified range
-            float randomX = (float) (Math.random() * (maxX - minX) + minX);
+        	float randomX = (float) (Math.random() * (maxX - minX) + minX);
 
             // Spawn a collectible at the random position
             //collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
@@ -161,8 +217,8 @@ public class PlayScreen implements Screen {
             entityManager.addEntity(collectible);
         }
     }
-
-
+    
+    
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
@@ -190,3 +246,4 @@ public class PlayScreen implements Screen {
         popupManager.dispose();
         ellipsis.dispose();
     }
+}
