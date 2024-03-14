@@ -94,9 +94,6 @@ public class PlayScreen implements Screen {
         spawnCollectibles();
         createFloor();
 
-        // collision manager
-        collisionManager = new CollisionManager(screenManager, holePositions, platforms);
-
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
@@ -108,6 +105,8 @@ public class PlayScreen implements Screen {
         inputOutputManager = new InputOutputManager(playerControlManager, popupManager, ellipsis);
         Gdx.input.setInputProcessor(inputOutputManager);
 
+     // collision manager
+        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager);
 
     }
 
@@ -200,10 +199,7 @@ public class PlayScreen implements Screen {
             platforms.add(elevatedPlatform); // Add to the list
             EntityManager.getInstance().addEntity(elevatedPlatform);
         }
-
-
     }
-
 
     public void spawnCollectibles() {
         float fixedX = 100; // Fixed x-axis position
