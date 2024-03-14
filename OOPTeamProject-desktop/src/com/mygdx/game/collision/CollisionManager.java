@@ -13,12 +13,14 @@ public class CollisionManager {
     private int collectibleCount;
     private ArrayList<Float> holePositions;
     private ArrayList<Platform> platforms; // List of all platform tiles
+    private InputOutputManager inputOutputManager;
 
-    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms) {
+    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager) {
         this.screenManager = screenManager;
         this.collectibleCount = 0;
         this.holePositions = holePositions;
         this.platforms = platforms;
+        this.inputOutputManager = inputOutputManager;
     }
     
     public int getCollectibleCount() {
@@ -83,9 +85,11 @@ public class CollisionManager {
         if ((obj1 instanceof Player && obj2 instanceof Collectible) || (obj1 instanceof Collectible && obj2 instanceof Player)) {
             EntityManager.getInstance().removeEntity(obj1 instanceof Collectible ? obj1 : obj2); // Remove collectible from EntityManager
             collectibleCount += 1;
+            inputOutputManager.playCollectSound();
             //System.out.println("Player has collected " + collectibleCount + " collectibles");
         } else if (obj1 instanceof Player && obj2 instanceof Enemy || obj1 instanceof Enemy && obj2 instanceof Player) {
-            screenManager.showEndScreen();
+        	inputOutputManager.playGameOverSound();
+        	screenManager.showEndScreen();  
         }
     }
 
@@ -135,6 +139,4 @@ public class CollisionManager {
             //System.out.println("Player is on the ground.");
         }
     }
-
-
 }
