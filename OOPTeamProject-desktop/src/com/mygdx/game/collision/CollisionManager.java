@@ -14,6 +14,8 @@ public class CollisionManager {
     private ArrayList<Float> holePositions;
     private ArrayList<Platform> platforms; // List of all platform tiles
     private InputOutputManager inputOutputManager;
+    private static final int LEFT_BOUNDARY = -20;
+    private static final int RIGHT_BOUNDARY = 690;
 
     public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager) {
         this.screenManager = screenManager;
@@ -45,6 +47,7 @@ public class CollisionManager {
                 if (isColliding(entities.get(i), entities.get(j))) {
                     handleCollision(entities.get(j), entities.get(i));
                 }
+                enforce_Boundary(entities.get(i));
             }
         }
 
@@ -139,4 +142,15 @@ public class CollisionManager {
             //System.out.println("Player is on the ground.");
         }
     }
+    //Method to ensure entities do not go out of bounds
+    public void enforce_Boundary(Entity obj) {
+        if (obj.getX() < LEFT_BOUNDARY)
+        {
+        	obj.setX(LEFT_BOUNDARY);
+        }
+        if (obj.getX() > RIGHT_BOUNDARY)
+        {
+        	obj.setX(RIGHT_BOUNDARY);
+        }
+    }    
 }
