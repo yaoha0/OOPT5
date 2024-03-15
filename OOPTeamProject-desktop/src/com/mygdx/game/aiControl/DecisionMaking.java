@@ -24,14 +24,15 @@ public class DecisionMaking {
         }
     }
 
+    //Makes the AI follow target, and ensures it does not go out of the game area
     public void attackTarget(Entity ai, Entity target,int speed) {
-    	if (target.getX() < ai.getX()) {
+    	if (target.getX() < ai.getX() && ai.getX() > -20) {
     		ai.setX(ai.getX() - speed);
     	}
-    	if (target.getX() > ai.getX()) {
+    	if (target.getX() > ai.getX() && ai.getX() < 690) { 
     		ai.setX(ai.getX() + speed);
     	}
-        if (ai.getY() > 0){
+        if (ai.getY() > 0){            //applies gravity to AI
             ai.setY(ai.getY() - speed);
         }
     }
