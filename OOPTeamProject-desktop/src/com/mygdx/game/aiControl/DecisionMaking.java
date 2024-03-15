@@ -6,8 +6,6 @@ public class DecisionMaking {
 
     private DetectionSystem detectionSystem;
     private PathfindingSystem pathfindingSystem;
-    private static final int LEFT_BOUNDARY = -20;
-    private static final int RIGHT_BOUNDARY = 690;
     private static final int GRAVITY = 1;
 
     public DecisionMaking(DetectionSystem detectionSystem, PathfindingSystem pathfindingSystem) {
@@ -32,10 +30,10 @@ public class DecisionMaking {
 
     //Makes the AI follow target, and ensures it does not go out of the game area
     public void attackTarget(Entity ai, Entity target,int speed) {
-    	if (target.getX() < ai.getX() && ai.getX() > LEFT_BOUNDARY) {
+    	if (target.getX() < ai.getX()) {
     		ai.setX(ai.getX() - speed);
     	}
-    	if (target.getX() > ai.getX() && ai.getX() < RIGHT_BOUNDARY) {
+    	if (target.getX() > ai.getX()) {
     		ai.setX(ai.getX() + speed);
     	}
     }
