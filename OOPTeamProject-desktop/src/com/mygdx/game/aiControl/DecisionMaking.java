@@ -25,6 +25,9 @@ public class DecisionMaking {
             pathfindingSystem.IdleMovement(ai, speed);
         	}
         }
+        if (ai.getY() > 0){ // applies gravity to AI
+            ai.setY(ai.getY() - GRAVITY);
+        }
     }
 
     //Makes the AI follow target, and ensures it does not go out of the game area
@@ -35,9 +38,6 @@ public class DecisionMaking {
     	if (target.getX() > ai.getX() && ai.getX() < RIGHT_BOUNDARY) {
     		ai.setX(ai.getX() + speed);
     	}
-        if (ai.getY() > 0){
-            ai.setY(ai.getY() - GRAVITY);
-        }
     }
 
 }
