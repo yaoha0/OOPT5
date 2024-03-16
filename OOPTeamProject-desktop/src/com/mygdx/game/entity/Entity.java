@@ -3,6 +3,7 @@ package entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 
 public abstract class Entity {
 	protected float x, y, width, height;
@@ -21,6 +22,14 @@ public abstract class Entity {
     }
 	
 	public abstract void update(float deltaTime);
+
+
+	public Rectangle getBounds() {
+		return new Rectangle(x, y, width, height);
+	}
+	public boolean collidesWith(Entity other) {
+		return this.getBounds().overlaps(other.getBounds());
+	}
 	
 	public void render(SpriteBatch batch) {
 		
