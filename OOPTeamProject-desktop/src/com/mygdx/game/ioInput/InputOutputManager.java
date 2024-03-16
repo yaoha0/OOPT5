@@ -3,7 +3,7 @@ package ioInput;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.MathUtils;
 import entity.Player;
 import playerControl.PlayerControlManager;
@@ -15,6 +15,8 @@ public class InputOutputManager implements InputProcessor {
     private Player player;
     private PopupManager popupManager;
     private Ellipsis ellipsis;
+    private Sound collectSound;
+    private Sound gameOverSound;
 
     public InputOutputManager(Player player ,PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis) {
         this.playerControlManager = playerControlManager;
@@ -23,6 +25,12 @@ public class InputOutputManager implements InputProcessor {
         this.player = player;
         // Register this class as the input processor
         Gdx.input.setInputProcessor(this);
+        loadSounds();
+    }
+    
+    public void loadSounds() {
+	    collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
+	    gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
     }
 
     @Override
@@ -163,6 +171,14 @@ public class InputOutputManager implements InputProcessor {
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
         return false;
+    }
+    
+    public void playCollectSound() {
+        collectSound.play();
+    }
+    
+    public void playGameOverSound() {
+        gameOverSound.play();
     }
 
 
