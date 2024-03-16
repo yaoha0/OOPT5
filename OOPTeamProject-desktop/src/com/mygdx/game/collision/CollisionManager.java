@@ -142,11 +142,8 @@ public class CollisionManager {
     public void handleCollectibleCollision(Player player, Collectible collectible) {
         // Increment the collectible count
         collectibleCount++;
-        inputOutputManager.playCollectSound();
-
         // Remove the collectible from the screen and the entity manager
         entityManager.removeEntity(collectible);
-
         // You can add more logic here based on your game's requirements
     }
 
@@ -155,10 +152,8 @@ public class CollisionManager {
             // Handle enemy collision logic
             // For example, reduce player health, trigger animations, or end the game
             System.out.println("Player has collided with an enemy!");
-
             return true;
         }
-
         return false;
     }
 
