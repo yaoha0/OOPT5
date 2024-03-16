@@ -10,7 +10,7 @@ public class DesktopLauncher {
 		config.setTitle("Final_Project_Part1");
 		
 		config.setForegroundFPS(60);
-        config.setWindowedMode(800, 600);
+        config.setWindowedMode(1280, 920);
 		new Lwjgl3Application(GameMaster.getInstance(), config);
 	}
 }
