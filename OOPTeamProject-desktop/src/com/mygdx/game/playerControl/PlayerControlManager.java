@@ -2,117 +2,90 @@ package playerControl;
 
 import entity.Player;
 import scene.PlayScreen;
+import collision.CollisionManager;
 
 public class PlayerControlManager {
-	private Player player;
-	private PlayScreen playScreen; // Reference to PlayScreen
-    private float speed = 2.5f; // Adjust speed as necessary
-    private float jumpVelocity = 70.0f; // Adjust jump velocity as necessary
-    private boolean movingLeft = false;
-    private boolean movingRight = false;
-    private float gravity = -25f; // Negative value for downward gravity
-    public static final float PIT_LEVEL = -100;
-    public static final float GROUND_LEVEL = 0;
-    private boolean isJumpingPressed = false; // Tracks if the jump key is being pressed
-    public PlayerControlManager(Player player, PlayScreen playScreen) {
+    private Player player;
+    private PlayScreen playScreen;
+    private CollisionManager collisionManager;
+    private float speed = 80;
+    private float jumpVelocity = 80f;
+    private float gravity = -50f;
+    private boolean isJumpingPressed = false;
+
+    private boolean isMovingRight, isMovingLeft;
+
+    public PlayerControlManager(Player player, PlayScreen playScreen, CollisionManager collisionManager) {
         this.player = player;
         this.playScreen = playScreen;
+        this.collisionManager = collisionManager;
     }
 
-    // This method will be called when the player needs to move left or right
-    public void movePlayerHorizontally(float direction) {
-        if (!playScreen.getSimulationLifeCycle().isPaused()) {
-            player.setX(player.getX() + direction * speed);
+    public void setMovingLeft(boolean moving) {
+        isMovingLeft = moving;
+        if (isMovingLeft) {
+            player.setIsWalking(true);
+            player.setVelocityX(-speed);
+            player.setIsFacingLeft(true);
+        } else if (!isMovingRight) { // Check if the right key is not pressed before stopping
+            player.setVelocityX(0);
         }
+    }
+
+    public void setMovingRight(boolean moving) {
+        isMovingRight = moving;
+        if (isMovingRight) {
+            player.setIsWalking(true);
+            player.setVelocityX(speed);
+            player.setIsFacingLeft(false);
+        } else if (!isMovingLeft) { // Check if the left key is not pressed before stopping
+            player.setVelocityX(0);
+        }
+        //System.out.println(player.getX());
     }
 
     public void makePlayerJump() {
-        if (!playScreen.getSimulationLifeCycle().isPaused() && player.getIsOnGround()) {
-            isJumpingPressed = true; // Jump key is pressed
+        if (player.getIsOnGround() && !isJumpingPressed) { // true
             player.setVelocityY(jumpVelocity);
             player.setIsOnGround(false);
-            player.setIsJumping(true);
+            player.setIsJumping(true);  // This should be set when jump key is pressed
+            isJumpingPressed = true;
         }
     }
 
-    // Call this from InputOutputManager when the jump key is released
     public void onJumpKeyReleased() {
-        isJumpingPressed = false; // Jump key is released
+        isJumpingPressed = false;
     }
-
 
     public void update(float deltaTime) {
         if (!playScreen.getSimulationLifeCycle().isPaused()) {
-            // Move left or right
-            if (movingLeft) {
-                player.setIsWalking(true);
-                movePlayerHorizontally(-1.0f);
-            } else if (movingRight) {
-                player.setIsWalking(true);
-                movePlayerHorizontally(1.0f);
-            } else {
-                player.setIsWalking(false); // Set to false when not moving
-            }
-
-
-            // Apply gravity every frame if the player is not on the ground or if they have fallen
-            if (!player.getIsOnGround() || player.getHasFallen()) {
-                float newYVelocity = player.getVelocityY() + gravity * deltaTime; // Apply gravity
-                player.setVelocityY(newYVelocity);
-                player.setY(player.getY() + newYVelocity * deltaTime); // Update the player's Y position
-
-                // If the jump key is released and the player is moving upwards, cut the jump short
-                /*if (!isJumpingPressed && newYVelocity > 0) {
-                    player.setVelocityY(newYVelocity * 0.5f); // Apply a factor to reduce the jump height
-                }*/
-            }
-
-            // Check for landing on the ground, but only if the player has not fallen through a hole
-            if (player.getY() <= 0 && !player.getHasFallen()) {
-                player.setY(0); // Correct the player's Y position to the ground level
-                player.setIsOnGround(true); // The player is on the ground
-                player.setVelocityY(0); // Stop the downward velocity
-
-                // If the jump animation is finished, the player is no longer jumping
-                if (player.getAnimationHandler().isJumpAnimationFinished()) {
-                    player.setIsJumping(false);
-                }
-            }
-
-            // If the player has fallen, check if they have reached the pit level
-            if (player.getHasFallen() && player.getY() <= Player.PIT_LEVEL) {
-                player.setY(Player.PIT_LEVEL); // Place the player at the pit level
-                player.setHasFallen(false); // The player has finished falling
-                // The player is not on the ground if they've fallen into a pit
-                player.setIsOnGround(false); // You'll need to set this to true if there's a bottom platform in the pit
-                player.setVelocityY(0); // Reset the velocity
-            }
-
-
+            applyGravity(deltaTime);
+            movePlayerBasedOnVelocity(deltaTime);
+            // Collision checks could be done here or in the PlayScreen's update method
         }
     }
 
-    // Call this method from InputOutputManager when LEFT key is pressed/released
-    public void setMovingLeft(boolean moving) {
-        this.movingLeft = moving;
-
-        // Assume setFacingLeft also flips the animation frames if needed
-        if (player != null) {
-            player.setFacingLeft(movingLeft);
-        }
+    private void applyGravity(float deltaTime) {
+        float newVelocityY = player.getVelocityY() + gravity * deltaTime;
+        player.setVelocityY(newVelocityY);
     }
 
-    // Call this method from InputOutputManager when RIGHT key is pressed/released
-    public void setMovingRight(boolean moving) {
-        this.movingRight = moving;
-
-        // Flip back to right if movingRight is true and the player was facing left
-        if (player != null) {
-            if (movingRight && player.getIsFacingLeft()) {
-                player.setFacingLeft(false);
-            }
-        }
+    private void movePlayerBasedOnVelocity(float deltaTime) {
+        player.setX(player.getX() + player.getVelocityX() * deltaTime);
+        player.setY(player.getY() + player.getVelocityY() * deltaTime);
     }
 
-    public float getGravity() { return this.gravity; }
+    private void checkForCollisions() {
+        // Implement collision detection and handling here
+        // This should adjust player's position and velocities as necessary
+        // Example:
+        //collisionManager.checkCollisions(player);
+    }
+
+    public boolean isMovingRight() { return isMovingRight; }
+    public boolean isMovingLeft() { return isMovingLeft; }
+
+    public void setIsMovingLeft(boolean movingLeft) { this.isMovingLeft = movingLeft; }
+
+    public void setIsMovingRight(boolean movingRight) { this.isMovingRight = movingRight; }
 }
