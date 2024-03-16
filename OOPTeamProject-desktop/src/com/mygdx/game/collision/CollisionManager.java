@@ -31,7 +31,7 @@ public class CollisionManager {
         this.platforms = platforms;
         this.inputOutputManager = inputOutputManager;
         this.entityManager = entityManager;
-
+        this.inputOutputManager = inputOutputManager;
 
     }
 
@@ -70,11 +70,12 @@ public class CollisionManager {
             for (Entity collectible : entityManager.getCollectibles()) {
                 // Check collision between player and collectible
                 checkCollectibleCollision((Player) entity1, (Collectible) collectible);
+                
             }
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
                 if (!handleEnemyCollision((Player) entity1)) {
-                    inputOutputManager.playGameOverSound();
+                	inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
             }
@@ -124,8 +125,6 @@ public class CollisionManager {
                 player.setHasCollided(false);
                 // Additional checks to correctly set the player's on-ground status
             }
-
-
         }
     }
 
@@ -136,6 +135,7 @@ public class CollisionManager {
         if (playerBounds.overlaps(collectibleBounds)) {
             // Handle the collision response
             handleCollectibleCollision(player, collectible);
+            inputOutputManager.playCollectSound();
         }
     }
 
@@ -304,6 +304,5 @@ public class CollisionManager {
         return false;
     }
 }
-
 
 
