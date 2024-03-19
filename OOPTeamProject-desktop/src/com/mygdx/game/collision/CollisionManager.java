@@ -31,7 +31,7 @@ public class CollisionManager {
         this.platforms = platforms;
         this.inputOutputManager = inputOutputManager;
         this.entityManager = entityManager;
-        this.inputOutputManager = inputOutputManager;
+
 
     }
 
@@ -70,12 +70,11 @@ public class CollisionManager {
             for (Entity collectible : entityManager.getCollectibles()) {
                 // Check collision between player and collectible
                 checkCollectibleCollision((Player) entity1, (Collectible) collectible);
-                
             }
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
                 if (!handleEnemyCollision((Player) entity1)) {
-                	inputOutputManager.playGameOverSound();
+                    //inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
             }
@@ -83,9 +82,10 @@ public class CollisionManager {
         }
     }
 
-    public void updateCollisions(Player player, Collectible collectible, ArrayList<Platform> platforms, float deltaTime) {
+    public void updateCollisions(Player player, Enemy enemy, Collectible collectible, ArrayList<Platform> platforms, float deltaTime) {
         checkBoundaryCollisions(player);
         checkResponse(player, collectible);
+        checkResponse(player, enemy);
 
         CollisionDirection futureCollisionDirection = checkFutureCollisions(player, deltaTime);
         if (futureCollisionDirection == CollisionDirection.HORIZONTAL) {
@@ -96,9 +96,6 @@ public class CollisionManager {
             player.setVelocityY(0); // Stop vertical movement if a vertical collision is predicted
 
         }
-
-
-
         //checkPlatformResponse(player, platforms);
         for (Platform platform : platforms) {
             // First, check collisions in each direction
@@ -125,6 +122,8 @@ public class CollisionManager {
                 player.setHasCollided(false);
                 // Additional checks to correctly set the player's on-ground status
             }
+
+
         }
     }
 
@@ -135,15 +134,17 @@ public class CollisionManager {
         if (playerBounds.overlaps(collectibleBounds)) {
             // Handle the collision response
             handleCollectibleCollision(player, collectible);
-            inputOutputManager.playCollectSound();
         }
     }
 
     public void handleCollectibleCollision(Player player, Collectible collectible) {
         // Increment the collectible count
         collectibleCount++;
+        //inputOutputManager.playCollectSound();
+
         // Remove the collectible from the screen and the entity manager
         entityManager.removeEntity(collectible);
+
         // You can add more logic here based on your game's requirements
     }
 
@@ -151,9 +152,10 @@ public class CollisionManager {
         if (player.getBounds().overlaps(enemy.getBounds())) {
             // Handle enemy collision logic
             // For example, reduce player health, trigger animations, or end the game
-            System.out.println("Player has collided with an enemy!");
             return true;
         }
+
+        System.out.println("Player has collided with an enemy!");
         return false;
     }
 
@@ -274,6 +276,7 @@ public class CollisionManager {
         Rectangle platformBounds = platform.getBoundingBox();
 
         if (Objects.equals(direction, "top")) {
+            player.setIsOnGround(true);
             player.setY(platformBounds.y + 12f); // Adjust player's Y position to be on top of the platform
             player.setVelocityY(0); // Stop the vertical movement
         } else if (Objects.equals(direction, "bottom")) {
@@ -299,5 +302,6 @@ public class CollisionManager {
         return false;
     }
 }
+
 
 
