@@ -3,7 +3,6 @@ package scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,16 +11,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import aiControl.*;
 import collision.CollisionManager;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+
 import entity.*;
 import ioInput.InputOutputManager;
 import playerControl.PlayerControlManager;
 import simulationLC.*;
+
+import com.mygdx.game.DesktopLauncher;
 import com.mygdx.game.GameMaster;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class PlayScreen implements Screen {
@@ -34,6 +34,9 @@ public class PlayScreen implements Screen {
     private Platform platform;
     private Collectible collectible;
     private Ellipsis ellipsis;
+    private int width, height;
+    private Vector3 position = new Vector3();
+    private Camera camera1;
 
     // Management attributes
     private SimulationLifeCycle simulationLifeCycle;
@@ -43,30 +46,29 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PlayerControlManager playerControlManager;
     private PopupManager popupManager;
-
+    
     // Class attributes
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
     private DecisionMaking decisionMaking;
-
     private ArrayList<Float> holePositions; // Add this attribute
     private ArrayList<Platform> platforms; // Add this to store platform tiles
-    private ArrayList<Platform> elevatedPlatforms;
-    private ShapeRenderer shapeRenderer;
-
+    
+    
     public PlayScreen(SpriteBatch batch) {
+    	this.width = DesktopLauncher.getWidth();
+    	this.height = DesktopLauncher.getHeight();
         this.batch = batch;
         font = new BitmapFont();
-        font.getData().setScale(50);
+        font.getData().setScale(3);
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance()); // Pass the GameMaster instance to the SimulationLifeCycle constructor
         initialize();
     }
 
     private void initialize() {
-        // initialize
+    	// initialize 
         camera = new OrthographicCamera();
-
-        shapeRenderer = new ShapeRenderer();
+        camera1 = new Camera(width,height);
 
         // simulation lifecycle manager
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
@@ -89,7 +91,7 @@ public class PlayScreen implements Screen {
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+        
         // Instantiate game entities
         player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
@@ -97,7 +99,6 @@ public class PlayScreen implements Screen {
 
         this.holePositions = new ArrayList<Float>();
         this.platforms = new ArrayList<Platform>();
-        this.elevatedPlatforms = new ArrayList<Platform>();
         // Add entities to the entity manager
         entityManager.addEntity(player);
         //entityManager.addEntity(collectible);
@@ -110,14 +111,14 @@ public class PlayScreen implements Screen {
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking);
-        playerControlManager = new PlayerControlManager(player,this, collisionManager);
+        playerControlManager = new PlayerControlManager(player,this);
 
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis);
+        inputOutputManager = new InputOutputManager(player, playerControlManager, popupManager, ellipsis);
         Gdx.input.setInputProcessor(inputOutputManager);
 
-        // collision manager
-        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager);
+     // collision manager
+        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager);
 
     }
 
@@ -128,20 +129,16 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
+        camera.position.set((player.getX() + player.getWidth() / 2)+200, (player.getY() + player.getHeight() / 2)+100, 0);
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        entityManager.renderBatch(batch);
+        	entityManager.renderBatch(batch);
             // Put ellipsis at top right
-        batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-
-        String scoreText = "Score: " + collisionManager.getCollectibleCount();
-        font.setColor(Color.WHITE); // Set font color to white
-        font.draw(batch, scoreText, 20, Gdx.graphics.getHeight() - 20); // Draw score near the top left corner
-        // Log the score value for debugging
-        //System.out.println("Score: " + countNumber);
-
-        renderBounds();
+            batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+        
+            String countNumber = String.valueOf(collisionManager.getCollectibleCount());
+            font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
         batch.end();
 
         // Handle input and render PopUp
@@ -157,14 +154,10 @@ public class PlayScreen implements Screen {
         }
 
 
-
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
-        playerControlManager.update(delta);
-        // for animations
-        player.update(delta);
-        // check for all collisions
-        collisionManager.updateCollisions(player, collectible, platforms, delta);
+        playerControlManager.update(Gdx.graphics.getDeltaTime());
+        collisionManager.updateCollisions();
         aicontrolManager.updateAI(enemy, player);
 
         // Check if all collectibles have been collected
@@ -173,43 +166,13 @@ public class PlayScreen implements Screen {
         }
     }
 
-    public void renderBounds() {
-        // Start shape rendering
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        // Set the color for the player's bounding box
-        shapeRenderer.setColor(Color.GREEN);
-        Rectangle playerBounds = player.getBounds();
-        shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
-
-        // Iterate through platforms to draw their bounding boxes
-        for (Platform platform : platforms) {
-            Rectangle platformBounds = platform.getBoundingBox();
-
-            // Set the color for the platform's bounding box
-            shapeRenderer.setColor(Color.RED);
-            shapeRenderer.rect(platformBounds.x, platformBounds.y, platformBounds.width, platformBounds.height);
-
-            // Check for overlap and draw in a different color
-            if (playerBounds.overlaps(platformBounds)) {
-                shapeRenderer.setColor(Color.BLUE);
-                float overlapX = Math.max(playerBounds.x, platformBounds.x);
-                float overlapY = Math.max(playerBounds.y, platformBounds.y);
-                float overlapWidth = Math.min(playerBounds.x + playerBounds.width, platformBounds.x + platformBounds.width) - overlapX;
-                float overlapHeight = Math.min(playerBounds.y + playerBounds.height, platformBounds.y + platformBounds.height) - overlapY;
-                shapeRenderer.rect(overlapX, overlapY, overlapWidth, overlapHeight);
-            }
-        }
-
-        shapeRenderer.end();
-    }
     public void createFloor() {
         this.holePositions.clear();
 
         float screenWidth = Gdx.graphics.getWidth();
         float groundPlatformHeight = 50; // Height of the ground platform
-        float platformWidth = 80; // Width of each platform tile
-        float spaceAboveGroundPlatform = 100; // Space above the ground platform where no elevated platform will be placed
+        float platformWidth = 50; // Width of each platform tile
+        float spaceAboveGroundPlatform = 50; // Space above the ground platform where no elevated platform will be placed
 
         // Number of initial and final tiles without holes
         int initialSafeTiles = 4;
@@ -223,7 +186,6 @@ public class PlayScreen implements Screen {
         // Create the initial safe ground tiles
         for (float xPosition = 0; xPosition < initialSafeTiles * platformWidth; xPosition += platformWidth) {
             Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
             EntityManager.getInstance().addEntity(groundPlatform);
         }
 
@@ -234,14 +196,12 @@ public class PlayScreen implements Screen {
                 continue;
             }
             Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
             EntityManager.getInstance().addEntity(groundPlatform);
         }
 
         // Create the final safe ground tiles
         for (float xPosition = screenWidth - finalSafeTiles * platformWidth; xPosition < screenWidth; xPosition += platformWidth) {
             Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
             EntityManager.getInstance().addEntity(groundPlatform);
         }
 
@@ -250,34 +210,46 @@ public class PlayScreen implements Screen {
             float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform; // Fixed 50 pixels above the ground
             Platform elevatedPlatform = new Platform("entity/objects/grass.png", holeX, elevationHeight, platformWidth, groundPlatformHeight);
             platforms.add(elevatedPlatform); // Add to the list
-            elevatedPlatforms.add(elevatedPlatform);
             EntityManager.getInstance().addEntity(elevatedPlatform);
         }
-
-
     }
 
     public void spawnCollectibles() {
-        int maxCollectibles = 3; // Maximum number of collectibles including the one on the ground
-        float fixedY = 150; // Fixed Y-axis position
+        float fixedX = 100; // Fixed x-axis position
+        float minX = 0; // Minimum y-axis position
+        float maxX = 799; // Maximum y-axis position
+        int maxCollectibles = 3; // Maximum number of collectibles
 
         // Clear existing collectibles
         EntityManager.getInstance().removeCollectible();
 
-        // Spawn collectibles randomly along the X-axis at the fixed Y-axis position
         for (int i = 0; i < maxCollectibles; i++) {
-            float collectibleX = MathUtils.random(0, Gdx.graphics.getWidth() - collectible.getWidth());
-            Collectible collectible = new Collectible("entity/objects/gemRed.png", collectibleX, fixedY, 100, 100);
+            // Generate a random y-axis position within the specified range
+        	float randomX = (float) (Math.random() * (maxX - minX) + minX);
+
+            // Spawn a collectible at the random position
+            //collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
+            collectible = new Collectible("entity/objects/gemRed.png", randomX, 100, 100, 100);
             entityManager.addEntity(collectible);
         }
     }
-
+    public void update(float delta)
+    {
+    	position.x = player.getX();
+    	position.y = player.getY();
+    	
+    	camera1.cameraUpdate(delta, position);
+    	batch.setProjectionMatrix(camera1.camera.combined);
+    	//shape.setProjectionMatrix(camera1.camera.combined);
+    } 
+    
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
 
     @Override
     public void show() {}
+   
 
     @Override
     public void resize(int width, int height) {}
@@ -298,11 +270,5 @@ public class PlayScreen implements Screen {
         entityManager.dispose();
         popupManager.dispose();
         ellipsis.dispose();
-        shapeRenderer.dispose(); // Dispose of the ShapeRenderer
-
-    }
-
-    public Platform[] getPlatforms() {
-        return platforms.toArray(new Platform[0]);
     }
 }
