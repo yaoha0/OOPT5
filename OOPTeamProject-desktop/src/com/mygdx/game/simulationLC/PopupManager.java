@@ -1,6 +1,7 @@
 package simulationLC;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -12,10 +13,12 @@ public class PopupManager {
     public boolean isPopupVisible;
     private boolean isPaused;
     private SimulationLifeCycle simulationLifeCycle;
+    private Camera camera; // Add camera attribute
 
-    public PopupManager(SpriteBatch batch, SimulationLifeCycle simulationLifeCycle) {
+    public PopupManager(SpriteBatch batch, SimulationLifeCycle simulationLifeCycle, Camera camera) {
         this.batch = batch;
         this.simulationLifeCycle = simulationLifeCycle;
+        this.camera = camera; // Assign the camera
 
         // Load pause and exit button textures
         pauseButtonTexture = new Texture("simulationLC/pause.png");
@@ -24,7 +27,7 @@ public class PopupManager {
     }
     
     public void togglePopupVisibility() {
-    	isPopupVisible = !isPopupVisible;
+        isPopupVisible = !isPopupVisible;
     }
     
     public void toggleGamePause() {
@@ -39,11 +42,12 @@ public class PopupManager {
     }
     
     public void exitGame() {
-    	simulationLifeCycle.exitGame();
+        simulationLifeCycle.exitGame();
     }
     
-
     public void render() {
+        batch.setProjectionMatrix(camera.combined); // Set the projection matrix to the camera's combined matrix
+
         batch.begin();
         // draw the buttons
         if (isPopupVisible) {
@@ -52,8 +56,8 @@ public class PopupManager {
             float buttonHeight = 50;
             float buttonSpacing = 40;
             float totalButtonWidth = 2 * buttonWidth + buttonSpacing;
-            float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f;
-            float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f;
+            float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f + camera.position.x - Gdx.graphics.getWidth() / 2f;
+            float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f + camera.position.y - Gdx.graphics.getHeight() / 2f;
 
             if (isPaused) {
                 batch.draw(playButtonTexture, buttonsX, buttonY, buttonWidth, buttonHeight);
@@ -68,6 +72,7 @@ public class PopupManager {
 
         batch.end();
     }
+    
     public void resumeGame() {
         isPaused = false;
         // Additional logic to resume the game
