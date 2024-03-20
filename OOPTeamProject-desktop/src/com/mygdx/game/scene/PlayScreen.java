@@ -83,7 +83,7 @@ public class PlayScreen implements Screen {
 
 
         // popUp manager
-        popupManager = new PopupManager(batch, simulationLifeCycle);
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera);
 
         // decision making components
         detectionSystem = new DetectionSystem();
@@ -135,11 +135,14 @@ public class PlayScreen implements Screen {
         batch.begin();
         	entityManager.renderBatch(batch);
             // Put ellipsis at top right
-            batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+        	 	float ellipsisX = ellipsis.getX() + camera.position.x - Gdx.graphics.getWidth() / 2;
+        	    float ellipsisY = ellipsis.getY() + camera.position.y - Gdx.graphics.getHeight() / 2;
+        	    batch.draw(ellipsis.getTexture(), ellipsisX, ellipsisY, ellipsis.getWidth(), ellipsis.getHeight());
         
-            String countNumber = String.valueOf(collisionManager.getCollectibleCount());
-            font.draw(batch, countNumber, 10, Gdx.graphics.getHeight() - 50 - 10);
-        batch.end();
+        	    String countNumber = String.valueOf(collisionManager.getCollectibleCount());
+        	    float counterX = 10 + camera.position.x - Gdx.graphics.getWidth() / 2;
+        	    float counterY = Gdx.graphics.getHeight() - 50 - 10 + camera.position.y - Gdx.graphics.getHeight() / 2;
+        	    font.draw(batch, countNumber, counterX, counterY);        batch.end();
 
         // Handle input and render PopUp
         popupManager.render();
