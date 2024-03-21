@@ -36,6 +36,7 @@ public class PlayScreen implements Screen {
     private int width, height;
     private Vector3 position = new Vector3();
     private Camera camera1;
+    private Texture backgroundTexture;
 
     // Management attributes
     private SimulationLifeCycle simulationLifeCycle;
@@ -62,11 +63,13 @@ public class PlayScreen implements Screen {
     float spaceAboveGroundPlatform = 100; // Space above the ground platform where no elevated platform will be placed
 
     public PlayScreen(SpriteBatch batch) {
+        
         this.width = DesktopLauncher.getWidth();
         this.height = DesktopLauncher.getHeight();
         this.batch = batch;
         font = new BitmapFont();
         font.getData().setScale(3);
+        backgroundTexture = new Texture("simulationLC/background2.png"); 
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance()); // Pass the GameMaster instance to the SimulationLifeCycle constructor
         initialize();
     }
@@ -141,6 +144,8 @@ public class PlayScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
+         //Draw background image
+        batch.draw(backgroundTexture, (-Gdx.graphics.getWidth()), (-Gdx.graphics.getHeight()), (Gdx.graphics.getWidth()*4), (Gdx.graphics.getHeight())*4);
         entityManager.renderBatch(batch);
             // Put ellipsis at top right
             float ellipsisX = ellipsis.getX() + camera.position.x - Gdx.graphics.getWidth() / 2;
