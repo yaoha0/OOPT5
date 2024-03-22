@@ -9,7 +9,7 @@ public class PlayerControlManager {
     private PlayScreen playScreen;
     private CollisionManager collisionManager;
     private float speed = 80;
-    private float jumpVelocity = 80f;
+    private float jumpVelocity = 120f;
     private float gravity = -50f;
     private boolean isJumpingPressed = false;
 
@@ -46,9 +46,9 @@ public class PlayerControlManager {
 
     public void makePlayerJump() {
         if (player.getIsOnGround() && !isJumpingPressed) { // true
+            player.setIsJumping(true);
             player.setVelocityY(jumpVelocity);
             player.setIsOnGround(false);
-            player.setIsJumping(true);  // This should be set when jump key is pressed
             isJumpingPressed = true;
         }
     }
@@ -62,6 +62,13 @@ public class PlayerControlManager {
             applyGravity(deltaTime);
             movePlayerBasedOnVelocity(deltaTime);
             // Collision checks could be done here or in the PlayScreen's update method
+
+            //System.out.println(player.getIsOnGround() && !player.isJumping());
+            // Check if the player has landed and end the jump animation
+            if (player.getIsOnGround() && player.isJumping()) {
+                player.setIsJumping(false);
+            }
+
         }
     }
 
