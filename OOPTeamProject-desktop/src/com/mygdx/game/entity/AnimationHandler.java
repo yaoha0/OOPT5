@@ -7,13 +7,14 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class AnimationHandler {
     private Animation<TextureRegion> idleAnimation, walkAnimation, jumpAnimation;
     private float stateTime;
+    private Texture idleSheet, walkSheet, jumpSheet;
 
     public AnimationHandler(String idlePath, String walkPath, String jumpPath, int idleFrames, int walkFrames, int jumpFrames) {
     	
-    	Texture idleSheet = new Texture(idlePath);
+    	idleSheet = new Texture(idlePath);
     	idleSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        Texture walkSheet = new Texture(walkPath);
-        Texture jumpSheet = new Texture(jumpPath);
+        walkSheet = new Texture(walkPath);
+        jumpSheet = new Texture(jumpPath);
 
         idleAnimation = createAnimation(idleSheet, idleFrames, 1, 0.4f);
         walkAnimation = createAnimation(walkSheet, walkFrames, 1, 0.2f);
@@ -58,6 +59,12 @@ public class AnimationHandler {
         stateTime += deltaTime; // Increment the state time by the delta time
     }
 
+    public void dispose() {
+        // Dispose of the textures when done
+        if (idleSheet != null) idleSheet.dispose();
+        if (walkSheet != null) walkSheet.dispose();
+        if (jumpSheet != null) jumpSheet.dispose();
+    }
     // Call this method to reset stateTime when the animation state changes
     public void resetStateTime() {
         stateTime = 0f; // Reset state time

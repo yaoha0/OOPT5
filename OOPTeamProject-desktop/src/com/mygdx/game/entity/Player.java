@@ -36,10 +36,13 @@ public class Player extends Entity {
     private float boundingBoxHeight;
     private Platform currentPlatform;
 
+    private int health;
+    private boolean isInvulnerable;
+    private float invulnerableTime;
 
-
-    private int health = 3;
-
+    private float stunTime;
+    private String targetWord = "NEPTUNE";
+    private StringBuilder collectedLetters = new StringBuilder();
 
     // Method to retrieve the AnimationHandler instance
     public AnimationHandler getAnimationHandler() {
@@ -53,6 +56,8 @@ public class Player extends Entity {
         // Set the bounding box dimensions (adjust as needed)
         this.boundingBoxWidth = width;
         this.boundingBoxHeight = height;
+        this.health = 3; // starting health
+        this.isInvulnerable = false;
         // idle, walk, jump, idle frames, walk frames, jump frames,
         animationHandler = new AnimationHandler(idleTexturePath, walkTexturePath, jumpTexturePath, idleFrames, walkFrames, jumpFrames);
     }
@@ -78,19 +83,21 @@ public class Player extends Entity {
             currentFrame.flip(true, false);
         }
 
+        if (isInvulnerable) {
+            float flashSpeed = 0.25f; // Increase flash frequency
+            boolean flashWhite = ((int)((invulnerableTime / flashSpeed)) % 2) == 0;
+            if (flashWhite) {
+                batch.setColor(1, 1, 1, 1); // Fully white
+            } else {
+                batch.setColor(0.5f, 0.5f, 0.5f, 1); // Darker shade or the player's normal color
+            }
+        }
+
         batch.draw(currentFrame, x, y, width, height);
+        // Reset color to normal after drawing the player
+        batch.setColor(1, 1, 1, 1);
 
     }
-
-    public Platform getCurrentPlatform() {
-        return currentPlatform;
-    }
-
-    public void setCurrentPlatform(Platform currentPlatform) {
-        this.currentPlatform = currentPlatform;
-
-    }
-
 
     // Add getters for the bounding box dimensions
     public float getBoundingBoxWidth() {
@@ -103,7 +110,7 @@ public class Player extends Entity {
 
     public Rectangle getBounds() {
         // Calculate the dimensions for the smaller bounding box
-        float shrinkAmount = 0.5f; // 20% shrink towards the middle
+        float shrinkAmount = 0.55f; // 20% shrink towards the middle
         float shrunkWidth = boundingBoxWidth * (1 - shrinkAmount);
         float shrunkHeight = boundingBoxHeight * (1 - shrinkAmount);
         float xOffset = (boundingBoxWidth - shrunkWidth) / 2; // Center the shrunk box
@@ -116,29 +123,26 @@ public class Player extends Entity {
     
     @Override
     public void update(float deltaTime) {
-        this.isOnGround = true;
-        //System.out.println("Player Y Axis: " + this.y);
-        // If the player has reached the pit level, reset to the last safe position
-        if (this.getHasFallen() && this.y <= PIT_LEVEL) {
-            // Reset the player's position to the last safe position
-            this.x = lastSafeX;
-            this.y = lastSafeY;
-            this.velocityY = 0; // Reset the velocity
-            this.hasFallen = false; // Player has finished falling
-            // Depending on your game, you might want to set isOnGround based on whether the last safe position was on the ground
-            this.isOnGround = true;
-            updateLastSafePosition();
+        if (isInvulnerable) {
+            invulnerableTime -= deltaTime;
+            if (invulnerableTime <= 0) {
+                isInvulnerable = false;
+            }
         }
-        this.setX(this.getX() + velocityX * deltaTime);
-        prevX = x;
-        prevY = y;
+
+        if (stunTime > 0) {
+            stunTime -= deltaTime;
+            // Prevent movement logic here, or simply skip movement update
+            return; // Skip the rest of the update if stunned
+        }
     }
 
-    // Call this when the player falls through a hole
-    public void fall() {
-        this.hasFallen = true;
-        this.isOnGround = false; // The player is no longer on the ground
-        //this.velocityY = 0; // Reset the velocity as the fall starts
+    @Override
+    public void dispose() {
+        super.dispose(); // Call dispose on the superclass, if it has a dispose method
+        if (animationHandler != null) {
+            animationHandler.dispose(); // Dispose of the animation handler
+        }
     }
 
     public void land(String type,float platformTopY) {
@@ -156,7 +160,6 @@ public class Player extends Entity {
         }
 
     }
-
     // Method to update the last safe position
     public void updateLastSafePosition() {
         if (this.isOnGround && !this.hasFallen) {
@@ -165,7 +168,40 @@ public class Player extends Entity {
         }
     }
 
-    
+    public boolean collectLetter(char letter) {
+        // Check if the next letter to collect matches the collected letter
+        int nextIndex = collectedLetters.length();
+        if (nextIndex < targetWord.length() && letter == targetWord.charAt(nextIndex)) {
+            collectedLetters.append(letter);
+            return true; // Letter was correctly collected
+        }
+        return false; // Incorrect letter, collection failed
+    }
+
+    public boolean hasCollectedAllLetters() {
+        return collectedLetters.length() == targetWord.length();
+    }
+
+    public void reduceHealth() {
+        if (!isInvulnerable) {
+            health--;
+            if (health > 0) {
+                setInvulnerable(true, 2.0f); // 2 seconds of invulnerability
+                stunTime = 0.5f; // Stunned for 0.5 seconds
+            }
+        }
+
+        System.out.println("reduceHealth function: " + health);
+    }
+
+
+    public String getTargetWord() {
+        return targetWord;
+    }
+
+    public String getCollectedLetters() {
+        return collectedLetters.toString();
+    }
     // Getters
     public float getVelocityX() { return velocityX; }
     public float getVelocityY() { return velocityY; }
@@ -210,6 +246,15 @@ public class Player extends Entity {
 
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    public void setInvulnerable(boolean isInvulnerable, float duration) {
+        this.isInvulnerable = isInvulnerable;
+        this.invulnerableTime = duration;
+    }
+
+    public boolean isInvulnerable() {
+        return isInvulnerable;
     }
 
 }
