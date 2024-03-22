@@ -8,7 +8,7 @@ public class PlayerControlManager {
     private Player player;
     private PlayScreen playScreen;
     private CollisionManager collisionManager;
-    private float speed = 80;
+    private float speed = 200;
     private float jumpVelocity = 120f;
     private float gravity = -50f;
     private boolean isJumpingPressed = false;
@@ -29,6 +29,7 @@ public class PlayerControlManager {
             player.setIsFacingLeft(true);
         } else if (!isMovingRight) { // Check if the right key is not pressed before stopping
             player.setVelocityX(0);
+            player.setIsWalking(false);
         }
     }
 
@@ -40,6 +41,7 @@ public class PlayerControlManager {
             player.setIsFacingLeft(false);
         } else if (!isMovingLeft) { // Check if the left key is not pressed before stopping
             player.setVelocityX(0);
+            player.setIsWalking(false);
         }
         //System.out.println(player.getX());
     }
