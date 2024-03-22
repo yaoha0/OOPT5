@@ -74,7 +74,7 @@ public class CollisionManager {
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
                 if (!handleEnemyCollision((Player) entity1)) {
-                    //inputOutputManager.playGameOverSound();
+                    inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
             }
@@ -140,7 +140,7 @@ public class CollisionManager {
     public void handleCollectibleCollision(Player player, Collectible collectible) {
         // Increment the collectible count
         collectibleCount++;
-        //inputOutputManager.playCollectSound();
+        inputOutputManager.playCollectSound();
 
         // Remove the collectible from the screen and the entity manager
         entityManager.removeEntity(collectible);
@@ -300,6 +300,5 @@ public class CollisionManager {
         return false;
     }
 }
-
 
 
