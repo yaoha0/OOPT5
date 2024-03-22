@@ -53,6 +53,7 @@ public class PlayScreen implements Screen {
     private PathfindingSystem pathfindingSystem;
     private DetectionSystem detectionSystem;
     private DecisionMaking decisionMaking;
+    private NonControlled nonControlled;
 
     private ArrayList<Float> holePositions; // Add this attribute
     private ArrayList<Platform> platforms; // Add this to store platform tiles
@@ -98,13 +99,14 @@ public class PlayScreen implements Screen {
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
+        nonControlled = new NonControlled(pathfindingSystem);
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Instantiate game entities
         player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
         collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
-        enemy = new Enemy("entity/enemy/mon1_sprite.png", 600, 0, 150, 150);
+        enemy = new Enemy("entity/objects/gemRED.png", 600, 0, 150, 150);
 
         this.holePositions = new ArrayList<Float>();
         this.platforms = new ArrayList<Platform>();
@@ -122,7 +124,7 @@ public class PlayScreen implements Screen {
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
 
         // AI control manager
-        aicontrolManager = new AiControlManager(2, 200, decisionMaking);
+        aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
 
         // I/O manager
