@@ -2,6 +2,7 @@ package collision;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Timer;
 import entity.*;
 import ioInput.InputOutputManager;
 import scene.ScreenManager;
@@ -64,6 +65,7 @@ public class CollisionManager {
      * @param entity2 The second entity involved in the collision.
      */
     public void checkResponse(Entity entity1, Entity entity2) {
+
         //System.out.printf("This Hit This " + entity1.toString() + entity2.toString());
         // Add specific collision response logic here
         if (entity1 instanceof Player && entity2 instanceof Collectible) {
@@ -73,19 +75,30 @@ public class CollisionManager {
             }
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
-                if (!handleEnemyCollision((Player) entity1)) {
+                if (handleEnemyCollision((Player) entity1)) {
                     inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
             }
 
+        } else if (entity1 instanceof Player && entity2 instanceof Spaceship) {
+            checkSpaceshipCollision((Player) entity1, (Spaceship) entity2);
         }
     }
 
-    public void updateCollisions(Player player, Enemy enemy, Collectible collectible, ArrayList<Platform> platforms, float deltaTime) {
+    public void updateCollisions(Player player, Enemy enemy, Spaceship spaceship, ArrayList<Platform> platforms, float deltaTime) {
         checkBoundaryCollisions(player);
-        checkResponse(player, collectible);
+
+        // Check collisions with all collectibles
+        for (Entity collectible : entityManager.getCollectibles()) {
+            checkResponse(player, collectible);
+        }
         checkResponse(player, enemy);
+        checkResponse(player, spaceship);
+
+        if (checkBaseGroundCollision(player)) {
+            handleBaseGroundCollision(player);
+        }
 
         CollisionDirection futureCollisionDirection = checkFutureCollisions(player, deltaTime);
         if (futureCollisionDirection == CollisionDirection.HORIZONTAL) {
@@ -127,25 +140,68 @@ public class CollisionManager {
         }
     }
 
+    public boolean checkBaseGroundCollision(Player player) {
+        // Check if player has fallen below the pit level and reset to last safe position
+        return player.getY() < Player.PIT_LEVEL;
+    }
+
+    public void handleBaseGroundCollision(Player player) {
+        player.setX(player.getLastSafeX());
+        player.setY(player.getLastSafeY());
+        // reduce player health
+        player.reduceHealth();
+        player.setVelocityY(0); // Stop falling
+    }
+    public void checkSpaceshipCollision(Player player, Spaceship spaceship) {
+        Rectangle playerBounds = player.getBounds();
+        Rectangle spaceshipBounds = spaceship.getBounds();
+
+        if (playerBounds.overlaps(spaceshipBounds)) {
+            handleSpaceshipCollision(player, spaceship);
+        }
+    }
+
+    public void handleSpaceshipCollision(Player player, Spaceship spaceship) {
+        if (player.hasCollectedAllLetters()) {
+            // Remove the spaceship from the screen and the entity manager
+            entityManager.removeEntity(spaceship);
+
+            // Trigger game over or level completion
+            inputOutputManager.playGameOverSound();
+            screenManager.showEndScreen();
+        } else {
+            // The player has not collected all letters, so they cannot end the game yet
+            // Handle this case, maybe show a message or prevent certain actions
+        }
+    }
+
     public void checkCollectibleCollision(Player player, Collectible collectible) {
         Rectangle playerBounds = player.getBounds();
         Rectangle collectibleBounds = collectible.getBounds();
 
         if (playerBounds.overlaps(collectibleBounds)) {
-            // Handle the collision response
             handleCollectibleCollision(player, collectible);
         }
     }
 
     public void handleCollectibleCollision(Player player, Collectible collectible) {
-        // Increment the collectible count
-        collectibleCount++;
-        inputOutputManager.playCollectSound();
+        char letterToCollect = collectible.getLetter(); // Assuming Collectible has a method getLetter()
+        if (player.collectLetter(letterToCollect)) {
+            // Increment the collectible count
+            collectibleCount++;
+            inputOutputManager.playCollectSound();
 
-        // Remove the collectible from the screen and the entity manager
-        entityManager.removeEntity(collectible);
+            // Remove the collectible from the screen and the entity manager
+            entityManager.removeEntity(collectible);
 
-        // You can add more logic here based on your game's requirements
+            // Check if all letters have been collected
+            if (player.hasCollectedAllLetters()) {
+                // maybe play sound
+            }
+        } else {
+            // Handle the case where the letter is not the next one needed
+            // Maybe play a different sound or show a message to the player
+        }
     }
 
     private boolean checkEnemyCollision(Player player, Enemy enemy) {
@@ -161,12 +217,17 @@ public class CollisionManager {
 
     // returns true if player has died
     private boolean handleEnemyCollision(Player player) {
-        // Example: reduce player health
-        player.setHealth(player.getHealth() - 1);
+        // Assuming there's a way to check if the player is currently invulnerable
+        if (player.isInvulnerable()) {
+            return false;
+        }
+
+        // Reduce player's health and handle invulnerability and stun within this method
+        player.reduceHealth();
+
         if (player.getHealth() <= 0) {
             System.out.println("Player is dead!");
             return true;
-            // Handle player death, like restarting the level or showing game over screen
         }
 
         return false;
@@ -281,7 +342,7 @@ public class CollisionManager {
 
         if (Objects.equals(direction, "top")) {
             player.setIsOnGround(true);
-            player.setY(platformBounds.y + 12f); // Adjust player's Y position to be on top of the platform
+            player.setY(platformBounds.y + 9f); // Adjust player's Y position to be on top of the platform
             player.setVelocityY(0); // Stop the vertical movement
         } else if (Objects.equals(direction, "bottom")) {
             // add for bottom
