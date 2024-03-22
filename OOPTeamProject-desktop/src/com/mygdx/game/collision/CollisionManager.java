@@ -136,7 +136,7 @@ public class CollisionManager {
             handleCollectibleCollision(player, collectible);
         }
     }
-    //Collectible logic
+
     public void handleCollectibleCollision(Player player, Collectible collectible) {
         // Increment the collectible count
         collectibleCount++;
@@ -144,6 +144,8 @@ public class CollisionManager {
 
         // Remove the collectible from the screen and the entity manager
         entityManager.removeEntity(collectible);
+
+        // You can add more logic here based on your game's requirements
     }
 
     private boolean checkEnemyCollision(Player player, Enemy enemy) {
@@ -153,7 +155,7 @@ public class CollisionManager {
             return true;
         }
 
-        System.out.println("Player has collided with an enemy!");
+        //System.out.println("Player has collided with an enemy!");
         return false;
     }
 
@@ -169,6 +171,7 @@ public class CollisionManager {
 
         return false;
     }
+
 
     public CollisionDirection checkFutureCollisions(Player player, float deltaTime) {
         Rectangle futureBounds = new Rectangle(player.getBounds());
@@ -199,6 +202,9 @@ public class CollisionManager {
     public void checkBoundaryCollisions(Player player) {
         Rectangle playerBounds = player.getBounds();
 
+        // Assume a world width of 10000 units, for example
+        final float WORLD_WIDTH = 10000;
+
         // Check left boundary
         if (playerBounds.x < LEFT_BOUNDARY) {
             player.setX(LEFT_BOUNDARY); // Position the player right at the left boundary
@@ -207,11 +213,11 @@ public class CollisionManager {
             }
         }
 
-        // Check right boundary
-        if (playerBounds.x + playerBounds.width > RIGHT_BOUNDARY) {
-            player.setX(RIGHT_BOUNDARY - playerBounds.width * 2); // Position the player right at the right boundary
+        // Check right boundary (end of the level)
+        if (playerBounds.x + playerBounds.width > WORLD_WIDTH) {
+            player.setX(WORLD_WIDTH - playerBounds.width); // Position the player right at the right boundary of the world
             if (player.getVelocityX() > 0) {
-                player.setVelocityX(0); // Stop the player's rightward movement if they hit the right boundary
+                player.setVelocityX(0); // Stop the player's rightward movement if they hit the world's right boundary
             }
         }
     }
@@ -300,5 +306,6 @@ public class CollisionManager {
         return false;
     }
 }
+
 
 
