@@ -41,7 +41,7 @@ public class PathfindingSystem {
 		}
 	}
 
-	private int randomposition() {
+	protected int randomposition() {
 		return (int) (Math.random() * RIGHT_BOUNDARY) + 1;
 	}
 }
