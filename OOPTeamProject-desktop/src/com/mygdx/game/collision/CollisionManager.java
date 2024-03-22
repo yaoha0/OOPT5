@@ -136,7 +136,7 @@ public class CollisionManager {
             handleCollectibleCollision(player, collectible);
         }
     }
-
+    //Collectible logic
     public void handleCollectibleCollision(Player player, Collectible collectible) {
         // Increment the collectible count
         collectibleCount++;
@@ -144,8 +144,6 @@ public class CollisionManager {
 
         // Remove the collectible from the screen and the entity manager
         entityManager.removeEntity(collectible);
-
-        // You can add more logic here based on your game's requirements
     }
 
     private boolean checkEnemyCollision(Player player, Enemy enemy) {
