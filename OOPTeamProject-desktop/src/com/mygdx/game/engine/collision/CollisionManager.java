@@ -77,6 +77,7 @@ public class CollisionManager {
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
                 if (handleEnemyCollision((Player) entity1)) {
+                	inputOutputManager.stopInGameSound();
                     inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
@@ -94,7 +95,7 @@ public class CollisionManager {
         for (Entity collectible : entityManager.getCollectibles()) {
             checkResponse(player, collectible);
         }
-
+        
         checkResponse(player, enemy);
         for (Entity entity : entityManager.getEntities()) {
             if (entity instanceof Spaceship) {
@@ -175,6 +176,7 @@ public class CollisionManager {
 
             // Trigger game over or level completion
             inputOutputManager.playGameOverSound();
+            inputOutputManager.stopInGameSound();
             screenManager.showEndScreen();
         } else {
             System.out.println("havent collected all");
@@ -377,6 +379,5 @@ public class CollisionManager {
         return false;
     }
 }
-
 
 
