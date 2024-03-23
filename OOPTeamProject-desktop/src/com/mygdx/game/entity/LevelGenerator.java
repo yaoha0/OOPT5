@@ -109,7 +109,6 @@ public class LevelGenerator {
         // Create and add the spaceship entity
         Spaceship spaceship = new Spaceship("entity/objects/spaceship.png", x - 80, y, Spaceship.WIDTH, Spaceship.HEIGHT);
         spaceship.setPosition(x, y);
-        this.spaceship = spaceship;
         EntityManager.getInstance().addEntity(spaceship);
     }
 
