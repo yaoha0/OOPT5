@@ -35,7 +35,7 @@ public class GameRenderer {
         this.shapeRenderer = new ShapeRenderer();
     }
 
-    public void render(float delta) {
+    public void render(float delta, OrthographicCamera camera, Matrix4 uiMatrix) {
         // Clear the screen, set the camera, begin the batch, draw background, entities, etc.
         batch.setProjectionMatrix(camera.combined);
         batch.begin();

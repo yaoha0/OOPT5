@@ -59,6 +59,7 @@ public class PlayScreen implements Screen {
     private String[] letters = {"N", "E", "P", "T", "U", "N", "E"};
 
     private GameRenderer gameRenderer;
+    private CameraManager cameraManager;
 
     private ArrayList<Float> holePositions; // Add this attribute
     private ArrayList<Platform> platforms; // Add this to store platform tiles
@@ -89,6 +90,8 @@ public class PlayScreen implements Screen {
         // initialize
         camera = new OrthographicCamera();
         camera1 = new Camera(width,height);
+
+        cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
 
         // Create a static projection matrix for UI elements
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -146,19 +149,9 @@ public class PlayScreen implements Screen {
         // collision manager
         collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager);
 
-        // Initialize camera's x position to the player's starting x, but ensuring that it does not show off-screen space
-        float initialCameraX = Math.max(player.getX() + player.getWidth() / 2, camera.viewportWidth / 2);
-
-        // Set the camera's y position to focus on the player or the center of the screen if the player is too low
-        float initialCameraY = Math.max(player.getY() + player.getHeight() / 2, camera.viewportHeight / 2);
-
-        // Apply the initial camera position
-        camera.position.set(initialCameraX, initialCameraY, 0);
-        camera.update();
-
         // game render (UI etc)
         gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
-
+        cameraManager.initializeCamera(player); // Set the initial camera position
 
     }
 
@@ -168,37 +161,8 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
-        // Update camera to follow the player when moving past the dead zone
-        float deadZoneRight = camera.viewportWidth * 0.25f; // For a dead zone on the right
-
-        // Calculate the camera's right boundary limit
-        float cameraRightLimit = levelLength - camera.viewportWidth / 2;
-
-        // Only move camera if the player is beyond the dead zone and the camera is within the level boundary
-        if (player.getX() + player.getWidth() / 2 > camera.position.x + deadZoneRight) {
-            // Calculate potential new camera position based on player's current position
-            float newCameraPositionX = player.getX() + player.getWidth() / 2 - deadZoneRight;
-            // Clamp the camera's position to prevent it from showing space past the level end
-            camera.position.x = Math.min(newCameraPositionX, cameraRightLimit);
-        }
-
-        // Make sure the camera doesn't show space off the left side of the world
-        camera.position.x = Math.max(camera.position.x, camera.viewportWidth / 2);
-
-        // Update camera's y position as before
-        camera.position.y = Math.max((player.getY() + player.getHeight() / 2), (float) height / 2);
-
-        // Update the camera
-        camera.update();
-        // Ensures the camera's bottom edge is never below the ground level
-        camera.position.set(
-                (player.getX() + player.getWidth() / 2),
-                Math.max((player.getY() + player.getHeight() / 2), (float) height / 2),
-                0
-        );
-
-        gameRenderer.render(delta);
+        cameraManager.update(player);
+        gameRenderer.render(delta, cameraManager.getCamera(), uiMatrix);
         // Handle input and render PopUp
         popupManager.render();
 
@@ -224,32 +188,6 @@ public class PlayScreen implements Screen {
         if (collisionManager.getCollectibleCount() == 3) {
             simulationLifeCycle.nextLevel(collisionManager.getCollectibleCount());
         }
-    }
-
-    public void renderBounds() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setProjectionMatrix(camera.combined);
-
-        // Draw bounding box for the player
-        shapeRenderer.setColor(Color.GREEN);
-        Rectangle playerBounds = player.getBounds();
-        shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
-
-        // Draw bounding boxes for collectibles
-        for (Entity collectible : entityManager.getCollectibles()) {
-            shapeRenderer.setColor(Color.YELLOW);
-            Rectangle collectibleBounds = collectible.getBounds();
-            shapeRenderer.rect(collectibleBounds.x, collectibleBounds.y, collectibleBounds.width, collectibleBounds.height);
-        }
-
-        // Draw bounding boxes for platforms or other entities as needed
-        shapeRenderer.setColor(Color.RED);
-        for (Platform platform : platforms) {
-            Rectangle platformBounds = platform.getBoundingBox();
-            shapeRenderer.rect(platformBounds.x, platformBounds.y, platformBounds.width, platformBounds.height);
-        }
-
-        shapeRenderer.end();
     }
 
     public SimulationLifeCycle getSimulationLifeCycle() {
@@ -286,3 +224,31 @@ public class PlayScreen implements Screen {
         return platforms.toArray(new Platform[0]);
     }
 }
+
+/* public void renderBounds() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
+        // Draw bounding box for the player
+        shapeRenderer.setColor(Color.GREEN);
+        Rectangle playerBounds = player.getBounds();
+        shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
+
+        // Draw bounding boxes for collectibles
+        for (Entity collectible : entityManager.getCollectibles()) {
+            shapeRenderer.setColor(Color.YELLOW);
+            Rectangle collectibleBounds = collectible.getBounds();
+            shapeRenderer.rect(collectibleBounds.x, collectibleBounds.y, collectibleBounds.width, collectibleBounds.height);
+        }
+
+        // Draw bounding boxes for platforms or other entities as needed
+        shapeRenderer.setColor(Color.RED);
+        for (Platform platform : platforms) {
+            Rectangle platformBounds = platform.getBoundingBox();
+            shapeRenderer.rect(platformBounds.x, platformBounds.y, platformBounds.width, platformBounds.height);
+        }
+
+        shapeRenderer.end();
+    }
+ *
+ */
