@@ -3,10 +3,10 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import scene.EndScreen;
-import scene.PlayScreen;
-import scene.ScreenManager;
-import simulationLC.SimulationLifeCycle;
+import game.screens.EndScreen;
+import game.screens.PlayScreen;
+import engine.scene.ScreenManager;
+import engine.simulationLC.SimulationLifeCycle;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
