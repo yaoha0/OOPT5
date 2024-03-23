@@ -45,7 +45,7 @@ public class PlayScreen implements Screen {
     private Ellipsis ellipsis;
     private int width, height;
     private Vector3 position = new Vector3();
-    private engine.rendering.Camera camera1;
+    private Camera camera1;
 
     private Texture backgroundTexture;
     // Management attributes
@@ -79,6 +79,8 @@ public class PlayScreen implements Screen {
     private float spaceAboveGroundPlatform = 100; // Space above the ground platform where no elevated platform will be placed
     private Matrix4 uiMatrix;
     private float levelLength = Gdx.graphics.getWidth() * 2.5f;
+
+
 
     public PlayScreen(SpriteBatch batch) {
         this.width = DesktopLauncher.getWidth();
@@ -186,6 +188,7 @@ public class PlayScreen implements Screen {
         // game render (UI etc)
         gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
         cameraManager.initializeCamera(player); // Set the initial camera position
+        //inputOutputManager.playInGameSound();
     }
 
     private void clearScreen() {
@@ -250,7 +253,9 @@ public class PlayScreen implements Screen {
         EntityManager.getInstance().dispose();
         popupManager.dispose();
         ellipsis.dispose();
-        shapeRenderer.dispose(); // Dispose of the ShapeRenderer
+        shapeRenderer.dispose();
+        player.dispose();
+        enemy.dispose();
 
     }
 
