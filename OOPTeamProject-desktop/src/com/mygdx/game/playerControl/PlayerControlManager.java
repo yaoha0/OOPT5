@@ -9,8 +9,8 @@ public class PlayerControlManager {
     private PlayScreen playScreen;
     private CollisionManager collisionManager;
     private float speed = 200;
-    private float jumpVelocity = 120f;
-    private float gravity = -50f;
+    private float jumpVelocity = 500f;
+    private float gravity = -770f;
     private boolean isJumpingPressed = false;
 
     private boolean isMovingRight, isMovingLeft;
