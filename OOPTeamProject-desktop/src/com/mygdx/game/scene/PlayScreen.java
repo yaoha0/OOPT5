@@ -79,47 +79,55 @@ public class PlayScreen implements Screen {
         this.width = DesktopLauncher.getWidth();
         this.height = DesktopLauncher.getHeight();
         this.batch = batch;
+        camera = new OrthographicCamera();
+        camera1 = new Camera(width,height);
+        // Set up the camera
+        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        //initialize
+        initializeComponents();
+        initializeEntities();
+        initializeManagers();
+        initializeUI();
+        initializeCamera();
+    }
+
+    @Override
+    public void render(float delta) {
+        clearScreen();
+
+        updateCameraAndRender(delta);
+        // Handle input and render PopUp
+        popupManager.render();
+        handlePopupInput();
+
+        updateGameLogic(delta);
+        checkGameProgress();
+    }
+
+    private void initializeComponents() {
         font = new BitmapFont();
         font.getData().setScale(3);
         backgroundTexture = new Texture("simulationLC/background2.png");
-        simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance()); // Pass the GameMaster instance to the SimulationLifeCycle constructor
-        initialize();
-    }
-
-    private void initialize() {
-        // initialize
-        camera = new OrthographicCamera();
-        camera1 = new Camera(width,height);
-
-        cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
-
+        shapeRenderer = new ShapeRenderer();
         // Create a static projection matrix for UI elements
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        shapeRenderer = new ShapeRenderer();
-        // simulation lifecycle manager
-        simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
-        // entity manager
-        entityManager = EntityManager.getInstance();
-        //entityManager = new EntityManager();
-        // scene manager
-        ScreenManager screenManager = ScreenManager.getInstance();
-        // popUp manager
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera);
 
         // decision making components
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         nonControlled = new NonControlled(pathfindingSystem);
+    }
 
-        // Set up the camera
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+    private void initializeEntities() {
+        // entity manager
+        entityManager = EntityManager.getInstance();
         // Instantiate game entities
-        player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
+        player = new Player("entity/player/idle.png", "entity/player/walk.png",
+                "entity/player/jump2.png", 3, 4, 2,
+                100, 0, 150, 150);
         enemy = new Enemy("entity/objects/rock.png", 600, 0, 80, 100);
-
         this.holePositions = new ArrayList<Float>();
         this.platforms = new ArrayList<Platform>();
         this.elevatedPlatforms = new ArrayList<Platform>();
@@ -131,12 +139,33 @@ public class PlayScreen implements Screen {
         this.lastPlatformX = 0; // Start from the beginning of the screen
 
         // level generator
-        levelGenerator = new LevelGenerator(platformWidth, groundPlatformHeight, spaceAboveGroundPlatform, levelLength, "entity/letters/", EntityManager.getInstance());
+        levelGenerator = new LevelGenerator(platformWidth, groundPlatformHeight, spaceAboveGroundPlatform,
+                levelLength, "entity/letters/", EntityManager.getInstance());
         levelGenerator.createFloor(letters);
         platforms = levelGenerator.getPlatforms();
+    }
 
+    private void initializeUI() {
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
+    }
+
+    private void initializeCamera() {
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
+        cameraManager.initializeCamera(player);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager);
+    }
+    private void initializeManagers() {
+        // simulation lifecycle manager
+        simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
+        cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
+
+        // scene manager
+        ScreenManager screenManager = ScreenManager.getInstance();
+        // popUp manager
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera);
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
@@ -152,29 +181,28 @@ public class PlayScreen implements Screen {
         // game render (UI etc)
         gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
         cameraManager.initializeCamera(player); // Set the initial camera position
-
     }
 
-    @Override
-    public void render(float delta) {
+    private void clearScreen() {
         // Clear the screen with black color
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    }
 
+    private void updateCameraAndRender(float delta) {
         cameraManager.update(player);
         gameRenderer.render(delta, cameraManager.getCamera(), uiMatrix);
-        // Handle input and render PopUp
-        popupManager.render();
-
-        // Check for Escape key press to resume game
+    }
+    private void handlePopupInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             if (popupManager.isPopupVisible()) {
-                // Only resume if PopUp is visible
                 popupManager.resumeGame();
-                System.out.println("Game resumed."); // Resume the game
+                System.out.println("Game resumed.");
             }
         }
+    }
 
+    private void updateGameLogic(float delta) {
         // Update and render game entities
         entityManager.update(Gdx.graphics.getDeltaTime());
         playerControlManager.update(delta);
@@ -183,13 +211,14 @@ public class PlayScreen implements Screen {
         // check for all collisions
         collisionManager.updateCollisions(player, enemy, spaceship, platforms, delta);
         aicontrolManager.updateAI(enemy, player);
+    }
 
+    private void checkGameProgress() {
         // Check if all collectibles have been collected
         if (collisionManager.getCollectibleCount() == 3) {
             simulationLifeCycle.nextLevel(collisionManager.getCollectibleCount());
         }
     }
-
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
