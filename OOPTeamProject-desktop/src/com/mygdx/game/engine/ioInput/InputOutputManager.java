@@ -8,31 +8,36 @@ import com.badlogic.gdx.audio.Sound;
 import game.entity.Player;
 import game.managers.PlayerControlManager;
 import engine.simulationLC.PopupManager;
+import engine.scene.ScreenManager;
 import engine.simulationLC.Ellipsis;
-
 
 public class InputOutputManager implements InputProcessor {
     private PlayerControlManager playerControlManager;
+    private ScreenManager screenManager;
     private Player player;
     private PopupManager popupManager;
     private Ellipsis ellipsis;
     private Sound collectSound;
     private Sound gameOverSound;
+    private Sound ingameSound;
+    private long ingameSoundId;
 
     public InputOutputManager(Player player ,PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis) {
         this.playerControlManager = playerControlManager;
         this.popupManager = popupManager;
         this.ellipsis = ellipsis;
         this.player = player;
-        //loadSounds();
+        
         // Register this class as the input processor
         Gdx.input.setInputProcessor(this);
         loadSounds();
     }
-
+    
     public void loadSounds() {
-        collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
-        gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
+	    collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
+	    gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
+	    ingameSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/ingame.mp3"));
+	    ingameSoundId = ingameSound.loop();
     }
 
     @Override
@@ -53,6 +58,7 @@ public class InputOutputManager implements InputProcessor {
             case Input.Keys.ESCAPE:
                 if (popupManager.isPopupVisible()) {
                     // Only resume if PopUp is visible
+                	ingameSound.resume(ingameSoundId);
                     popupManager.resumeGame();
                     System.out.println("Game resumed."); // Resume the game
                     break;
@@ -114,37 +120,33 @@ public class InputOutputManager implements InputProcessor {
     }
 
 
-
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
         float touchX = screenX;
         float touchY = Gdx.graphics.getHeight() - screenY;
-
-
-        Gdx.app.log("TouchDown", "Touch at: " + touchX + ", " + touchY);
-
-
-        if (touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
+        
+        if (ellipsis != null && touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
                 touchY >= ellipsis.getY() && touchY <= ellipsis.getY() + ellipsis.getHeight()) {
             popupManager.togglePopupVisibility();
+            ingameSound.pause(ingameSoundId);
             return true;
         }
 
         if (popupManager.isPopupVisible()) {
             // Assuming PopupManager has methods like isPauseButtonClicked(touchX, touchY) and isExitButtonClicked(touchX, touchY)
             if (isPauseButtonClicked(touchX, touchY)) {
-                popupManager.toggleGamePause(); // This method should handle toggling the pause state and calling simulationLifeCycle methods as needed
+                popupManager.toggleGamePause();
+                ingameSound.pause(ingameSoundId);// This method should handle toggling the pause state and calling simulationLifeCycle methods as needed
             } else if (isExitButtonClicked(touchX, touchY)) {
-                popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
+            	stopInGameSound();
+            	popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
             }
             return true; // Consume the touch event if it's within the PopUp
         }
-
-
-
         return false;
     }
+    
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -174,13 +176,21 @@ public class InputOutputManager implements InputProcessor {
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
         return false;
     }
-
+    
     public void playCollectSound() {
         collectSound.play();
     }
-
+    
     public void playGameOverSound() {
         gameOverSound.play();
+    }
+    
+    public void playInGameSound() {
+        ingameSound.play();
+    }
+    
+    public void stopInGameSound() {
+        ingameSound.stop();
     }
 
 
