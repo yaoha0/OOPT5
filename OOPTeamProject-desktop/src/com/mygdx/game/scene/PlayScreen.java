@@ -55,6 +55,10 @@ public class PlayScreen implements Screen {
     private DetectionSystem detectionSystem;
     private DecisionMaking decisionMaking;
     private NonControlled nonControlled;
+    private LevelGenerator levelGenerator;
+    private String[] letters = {"N", "E", "P", "T", "U", "N", "E"};
+
+    private GameRenderer gameRenderer;
 
     private ArrayList<Float> holePositions; // Add this attribute
     private ArrayList<Platform> platforms; // Add this to store platform tiles
@@ -67,10 +71,8 @@ public class PlayScreen implements Screen {
     private float spaceAboveGroundPlatform = 100; // Space above the ground platform where no elevated platform will be placed
     private Matrix4 uiMatrix;
     private float levelLength = Gdx.graphics.getWidth() * 2.5f;
-    private final float VIEWPORT_RIGHT_THRESHOLD = 100; // Distance from right edge to generate new platforms
-    private int letterIndex = 0;
-    private String[] letters = {"N", "E", "P", "T", "U", "N", "E"};
-    private String letterBasePath = "entity/letters/";
+
+
 
     public PlayScreen(SpriteBatch batch) {
         this.width = DesktopLauncher.getWidth();
@@ -87,6 +89,9 @@ public class PlayScreen implements Screen {
         // initialize
         camera = new OrthographicCamera();
         camera1 = new Camera(width,height);
+
+        // Create a static projection matrix for UI elements
+        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         shapeRenderer = new ShapeRenderer();
         // simulation lifecycle manager
@@ -108,10 +113,8 @@ public class PlayScreen implements Screen {
         // Set up the camera
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-
         // Instantiate game entities
         player = new Player("entity/player/idle.png", "entity/player/walk.png", "entity/player/jump2.png", 3, 4, 2, 100, 0, 150, 150);
-        //collectible = new Collectible("entity/objects/gemRed.png", 350, 100, 100, 100);
         enemy = new Enemy("entity/objects/rock.png", 600, 0, 80, 100);
 
         this.holePositions = new ArrayList<Float>();
@@ -121,10 +124,13 @@ public class PlayScreen implements Screen {
         entityManager.addEntity(player);
         entityManager.addEntity(enemy);
 
-
         //spawnCollectibles();
         this.lastPlatformX = 0; // Start from the beginning of the screen
-        createFloor();
+
+        // level generator
+        levelGenerator = new LevelGenerator(platformWidth, groundPlatformHeight, spaceAboveGroundPlatform, levelLength, "entity/letters/", EntityManager.getInstance());
+        levelGenerator.createFloor(letters);
+        platforms = levelGenerator.getPlatforms();
 
         // Create ellipsis
         ellipsis = new Ellipsis("simulationLC/ellipsis.png", Gdx.graphics.getWidth() - 50, Gdx.graphics.getHeight() - 50, 50, 50);
@@ -150,8 +156,10 @@ public class PlayScreen implements Screen {
         camera.position.set(initialCameraX, initialCameraY, 0);
         camera.update();
 
-        // Create a static projection matrix for UI elements
-        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        // game render (UI etc)
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
+
+
     }
 
     @Override
@@ -189,25 +197,8 @@ public class PlayScreen implements Screen {
                 Math.max((player.getY() + player.getHeight() / 2), (float) height / 2),
                 0
         );
-        batch.setProjectionMatrix(camera.combined);
 
-        batch.begin();
-        //Draw background image
-        batch.draw(backgroundTexture, (-Gdx.graphics.getWidth()), (-Gdx.graphics.getHeight()), (Gdx.graphics.getWidth()*4), (Gdx.graphics.getHeight())*4);
-        entityManager.renderBatch(batch);
-
-        batch.end();
-
-        // Render UI with static projection matrix
-        batch.setProjectionMatrix(uiMatrix);
-        batch.begin();
-        renderBounds();
-            // Put ellipsis at top right
-            batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-            font.draw(batch, String.valueOf(collisionManager.getCollectibleCount()), 10, Gdx.graphics.getHeight() - 50);
-            //font.draw(batch, countNumber, counterX, counterY);
-        //renderBounds();
-        batch.end();
+        gameRenderer.render(delta);
         // Handle input and render PopUp
         popupManager.render();
 
@@ -261,113 +252,6 @@ public class PlayScreen implements Screen {
         shapeRenderer.end();
     }
 
-    public void createFloor() {
-        this.holePositions.clear();
-
-        int initialSafeTiles = 4;
-        int finalSafeTiles = 3;
-        int collectiblesSpawned = 0;
-        int maxCollectibles = letters.length;
-        float lastPlatformX = 0; // Variable to track the last platform's position
-
-        float lastElevatedPlatformX = Float.MIN_VALUE; // Track the last elevated platform's X position
-        float minElevatedPlatformDistance = 3 * platformWidth; // Minimum distance between elevated platforms
-
-        // Create initial safe ground tiles
-        for (float xPosition = 0; xPosition < initialSafeTiles * platformWidth; xPosition += platformWidth) {
-            createPlatformAt(xPosition, 0, false);
-        }
-
-        // Define the start and end of the middle section where holes and collectibles can appear
-        float startOfMiddleSection = initialSafeTiles * platformWidth;
-        float endOfMiddleSection = levelLength - finalSafeTiles * platformWidth;
-
-        // Calculate the interval for placing collectibles evenly
-        float sectionLength = endOfMiddleSection - startOfMiddleSection;
-        float collectibleInterval = sectionLength / (maxCollectibles + 1);
-
-        // Generating elevated platforms with increased space between them
-        for (Float holeX : this.holePositions) {
-            // Only create an elevated platform if we are sufficiently far from the last one
-            if (holeX - lastElevatedPlatformX >= minElevatedPlatformDistance) {
-                float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform;
-                createPlatformAt(holeX, elevationHeight, false);
-                lastElevatedPlatformX = holeX; // Update the position of the last created elevated platform
-            }
-        }
-
-        // Generate platforms and possibly holes in the middle section
-        for (float xPosition = startOfMiddleSection, nextCollectibleX = startOfMiddleSection + collectibleInterval;
-             xPosition < endOfMiddleSection;
-             xPosition += platformWidth) {
-
-            if (MathUtils.randomBoolean()) {
-                this.holePositions.add(xPosition);
-                continue;
-            }
-
-            boolean spawnCollectible = collectiblesSpawned < maxCollectibles && xPosition >= nextCollectibleX;
-            if (spawnCollectible) {
-                collectiblesSpawned++;
-                nextCollectibleX += collectibleInterval;
-            }
-
-            createPlatformAt(xPosition, 0, spawnCollectible);
-        }
-
-        // Generate the final safe ground tiles towards the end of the level
-        for (float xPosition = endOfMiddleSection; xPosition < levelLength; xPosition += platformWidth) {
-            createPlatformAt(xPosition, 0, false);
-            lastPlatformX = xPosition; // Update the last platform's position
-        }
-
-        // Optionally, create elevated platforms directly above the holes if needed
-        for (Float holeX : this.holePositions) {
-            float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform;
-            createPlatformAt(holeX, elevationHeight, false);
-        }
-
-        // After all platforms have been created, spawn the spaceship
-        float spaceshipX = lastPlatformX + platformWidth / 2; // Center on the last platform
-
-        // Assume the height of the platform image is known (e.g., 20 pixels)
-        float platformImageHeight = 20; // Replace with your platform's actual height
-        float spaceshipY = groundPlatformHeight + platformImageHeight; // Position on top of the platform
-
-        createSpaceshipAt(spaceshipX, spaceshipY);
-    }
-
-    // You would need to implement this method to spawn the spaceship at the given position
-    public void createSpaceshipAt(float x, float y) {
-        // Create and add the spaceship entity
-        Spaceship spaceship = new Spaceship("entity/objects/spaceship.png", x - 80, y, Spaceship.WIDTH, Spaceship.HEIGHT);
-        spaceship.setPosition(x, y);
-        this.spaceship = spaceship;
-        EntityManager.getInstance().addEntity(spaceship);
-    }
-
-    // Then, modify your createPlatformAt method to include the letter character in the Collectible
-    private void createPlatformAt(float x, float y, boolean spawnCollectible) {
-        Platform platform = new Platform("entity/objects/ground2.png", x, y, platformWidth, groundPlatformHeight);
-        platforms.add(platform);
-        EntityManager.getInstance().addEntity(platform);
-
-        if (spawnCollectible) {
-            float collectibleY = y + groundPlatformHeight + 10; // Adjust 10 to the appropriate height above the platform
-            float collectibleX = x + (platformWidth - 50) * MathUtils.random(); // Randomize collectible on the platform
-
-            if (letterIndex >= letters.length) {
-                letterIndex = 0; // Reset to 0 or handle it as needed
-            }
-
-            char currentLetterChar = letters[letterIndex].charAt(0); // Assuming letters is a String array
-            String imagePath = letterBasePath + currentLetterChar + ".png";
-            Collectible collectible = new Collectible(imagePath, collectibleX, collectibleY, 50, 50, currentLetterChar);
-            EntityManager.getInstance().addEntity(collectible);
-
-            letterIndex++; // Move to the next letter
-        }
-    }
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
@@ -402,53 +286,3 @@ public class PlayScreen implements Screen {
         return platforms.toArray(new Platform[0]);
     }
 }
-
-/*public void createFloor() {
-        this.holePositions.clear();
-
-        float screenWidth = Gdx.graphics.getWidth();
-
-
-        // Number of initial and final tiles without holes
-        int initialSafeTiles = 4;
-        int finalSafeTiles = 3;
-
-        // Adjusted for the width of the safe zones at the beginning and the end
-        float middleSectionWidth = screenWidth - (initialSafeTiles + finalSafeTiles) * platformWidth;
-
-        //ArrayList<Float> holePositions = new ArrayList<Float>();
-
-        // Create the initial safe ground tiles
-        for (float xPosition = 0; xPosition < initialSafeTiles * platformWidth; xPosition += platformWidth) {
-            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
-            EntityManager.getInstance().addEntity(groundPlatform);
-        }
-
-        // Create ground platforms with holes in the middle section
-        for (float xPosition = initialSafeTiles * platformWidth; xPosition < screenWidth - finalSafeTiles * platformWidth; xPosition += platformWidth) {
-            if (MathUtils.randomBoolean()) { // Adjust the chance for a hole as needed
-                this.holePositions.add(xPosition);
-                continue;
-            }
-            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
-            EntityManager.getInstance().addEntity(groundPlatform);
-        }
-
-        // Create the final safe ground tiles
-        for (float xPosition = screenWidth - finalSafeTiles * platformWidth; xPosition < screenWidth; xPosition += platformWidth) {
-            Platform groundPlatform = new Platform("entity/objects/grass.png", xPosition, 0, platformWidth, groundPlatformHeight);
-            platforms.add(groundPlatform);
-            EntityManager.getInstance().addEntity(groundPlatform);
-        }
-
-        // Create elevated platforms directly above the holes
-        for (Float holeX : this.holePositions) {
-            float elevationHeight = groundPlatformHeight + spaceAboveGroundPlatform; // Fixed 50 pixels above the ground
-            Platform elevatedPlatform = new Platform("entity/objects/grass.png", holeX, elevationHeight, platformWidth, groundPlatformHeight);
-            platforms.add(elevatedPlatform); // Add to the list
-            elevatedPlatforms.add(elevatedPlatform);
-            EntityManager.getInstance().addEntity(elevatedPlatform);
-        }
-    }*/
