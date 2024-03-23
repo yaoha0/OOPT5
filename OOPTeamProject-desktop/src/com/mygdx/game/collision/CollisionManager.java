@@ -93,8 +93,13 @@ public class CollisionManager {
         for (Entity collectible : entityManager.getCollectibles()) {
             checkResponse(player, collectible);
         }
+        
         checkResponse(player, enemy);
-        checkResponse(player, spaceship);
+        for (Entity entity : entityManager.getEntities()) {
+            if (entity instanceof Spaceship) {
+                checkResponse(player, (Spaceship) entity);
+            }
+        }
 
         if (checkBaseGroundCollision(player)) {
             handleBaseGroundCollision(player);
@@ -163,6 +168,7 @@ public class CollisionManager {
 
     public void handleSpaceshipCollision(Player player, Spaceship spaceship) {
         if (player.hasCollectedAllLetters()) {
+            System.out.println("ending game");
             // Remove the spaceship from the screen and the entity manager
             entityManager.removeEntity(spaceship);
 
@@ -170,8 +176,10 @@ public class CollisionManager {
             inputOutputManager.playGameOverSound();
             screenManager.showEndScreen();
         } else {
+            System.out.println("havent collected all");
             // The player has not collected all letters, so they cannot end the game yet
             // Handle this case, maybe show a message or prevent certain actions
+            System.out.println(player.getCollectedLetters());
         }
     }
 
@@ -197,6 +205,7 @@ public class CollisionManager {
             // Check if all letters have been collected
             if (player.hasCollectedAllLetters()) {
                 // maybe play sound
+                System.out.println("Player has collected ALL");
             }
         } else {
             // Handle the case where the letter is not the next one needed
