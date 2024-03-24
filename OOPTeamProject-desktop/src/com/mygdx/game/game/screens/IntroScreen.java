@@ -43,13 +43,16 @@ public class IntroScreen implements Screen {
         
         batch.begin();
         batch.draw(introBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        String text = "Welcome to Voyage of the Cosmic Alphabet!\r\n"
+        String text = "Welcome to the Cosmic Alphabet Adventure!\r\n"
         		+ "\r\n"
-        		+ "Embark on an extraordinary journey with James,\r\n"
-        		+ "a daring astronaut on a mission to explore planet for humanity's future.\r\n"
+        		+ "Join James, our curious explorer, on a thrilling journey\r\n"
+        		+ "to discover the planets in our solar system!\r\n"
         		+ "\r\n"
         		+ " ---------Mission Brief:--------- \r\n"
-        		+ "Collect the scattered alphabets for Neptune to piece together crucial data.\r\n"
+        		+"Solve the riddles and collect scattered alphabets\r\n"
+        		+ "to spell out the planets and discover amazing cosmic facts!\r\n"
+        		+ "\r\n"
+        		+ "Be cautious! Each incorrect letter collected will damage your space suit.\r\n"
         		+ "\r\n"
         		+ "Use Arrow Keys to move left & right.\r\n"
         		+ "Use Spacebar to Jump. \r\n"
