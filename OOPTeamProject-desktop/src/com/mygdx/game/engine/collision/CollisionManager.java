@@ -23,7 +23,6 @@ public class CollisionManager {
     private static final int LEFT_BOUNDARY = 0;
     private static final int RIGHT_BOUNDARY = Gdx.graphics.getWidth();
     private float tolerance = 0.1f;
-
     public enum CollisionDirection {
         NONE, HORIZONTAL, VERTICAL
     }
@@ -36,6 +35,7 @@ public class CollisionManager {
         this.inputOutputManager = inputOutputManager;
         this.entityManager = entityManager;
         this.popupManager = popupManager;
+
 
     }
 
@@ -79,7 +79,7 @@ public class CollisionManager {
         } else if (entity1 instanceof Player && entity2 instanceof Enemy) {
             if (checkEnemyCollision((Player) entity1, (Enemy) entity2)) {
                 if (handleEnemyCollision((Player) entity1)) {
-                	inputOutputManager.stopInGameSound();
+                    inputOutputManager.stopInGameSound();
                     inputOutputManager.playGameOverSound();
                     screenManager.showEndScreen();
                 }
@@ -97,7 +97,7 @@ public class CollisionManager {
         for (Entity collectible : entityManager.getCollectibles()) {
             checkResponse(player, collectible);
         }
-        
+
         checkResponse(player, enemy);
         for (Entity entity : entityManager.getEntities()) {
             if (entity instanceof Spaceship) {
@@ -160,6 +160,14 @@ public class CollisionManager {
         // reduce player health
         player.reduceHealth();
         player.setVelocityY(0); // Stop falling
+
+        // Check if player's health has reached 0
+        if (player.getHealth() <= 0) {
+            // Trigger game over sequence
+            inputOutputManager.playGameOverSound();
+            inputOutputManager.stopInGameSound();
+            screenManager.showEndScreen();
+        }
     }
     public void checkSpaceshipCollision(Player player, Spaceship spaceship) {
         Rectangle playerBounds = player.getBounds();
