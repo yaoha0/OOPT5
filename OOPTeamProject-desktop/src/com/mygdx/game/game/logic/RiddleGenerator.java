@@ -22,6 +22,12 @@ public class RiddleGenerator {
             "MARS"
     };
 
+    private String[] facts = {
+    		"Mercury is the smallest planet in our solar system and the closest to the Sun.\n Despite its proximity, it's not the hottest planet.",
+            "Earth is the only planet in our solar system known to harbor life.\n It has a powerful magnetic field that protects us from the effects of solar wind.",
+            "Mars is home to the tallest mountain in the solar system, Olympus Mons,\n which is nearly three times the height of Mount Everest."
+    };
+
     private Random random = new Random();
     private int currentRiddleIndex = -1;
     private String currentTargetWord;
