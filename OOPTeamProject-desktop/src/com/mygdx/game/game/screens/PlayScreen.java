@@ -72,7 +72,7 @@ public class PlayScreen implements Screen {
     private Texture heart;
 
     private ArrayList<Float> holePositions; // Add this attribute
-    private ArrayList<com.mygdx.game.game.entity.Platform> platforms;
+    private ArrayList<Platform> platforms;
     private ArrayList<Platform> elevatedPlatforms;
     private ShapeRenderer shapeRenderer;
 
