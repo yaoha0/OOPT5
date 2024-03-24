@@ -4,14 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import engine.simulationLC.SimulationLifeCycle;
+
+import game.screens.PlayScreen;
 
 public class PopupManager {
     private SpriteBatch batch;
     private Texture pauseButtonTexture;
     private Texture exitButtonTexture;
     private Texture playButtonTexture;
+    private Texture infopopupTexture;
     public boolean isPopupVisible;
+    public boolean infoPopupVisible = false;
     private boolean isPaused;
     private SimulationLifeCycle simulationLifeCycle;
     private Camera camera; // Add camera attribute
@@ -25,6 +28,7 @@ public class PopupManager {
         pauseButtonTexture = new Texture("simulationLC/pause.png");
         exitButtonTexture = new Texture("simulationLC/exit.png");
         playButtonTexture = new Texture("simulationLC/playbtn.png");
+        infopopupTexture = new Texture("simulationLC/infopopup.png");
     }
     
     public void togglePopupVisibility() {
@@ -44,6 +48,11 @@ public class PopupManager {
     
     public void exitGame() {
         simulationLifeCycle.exitGame();
+    }
+    
+    public void showinfoPopup() {
+    	infoPopupVisible = true;
+    	simulationLifeCycle.pauseGame();
     }
     
     public void render() {
@@ -70,9 +79,24 @@ public class PopupManager {
             float exitButtonX = buttonsX + buttonWidth + buttonSpacing;
             batch.draw(exitButtonTexture, exitButtonX, buttonY, buttonWidth, buttonHeight);
         }
+        
+        if (infoPopupVisible) {
+        	 float imageWidth = 533;
+             float imageHeight = 421;
+             float screenWidth = Gdx.graphics.getWidth();
+             float screenHeight = Gdx.graphics.getHeight();
+             float imageX = (screenWidth - imageWidth) / 2;
+             float imageY = (screenHeight - imageHeight) / 2;
+
+             // Draw the information popup image
+             batch.draw(infopopupTexture, imageX, imageY, imageWidth, imageHeight);
+
+        }
 
         batch.end();
     }
+    
+
     
     public void resumeGame() {
         isPaused = false;
