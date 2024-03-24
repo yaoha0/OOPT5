@@ -56,7 +56,7 @@ public class Player extends Entity {
         // Set the bounding box dimensions (adjust as needed)
         this.boundingBoxWidth = width;
         this.boundingBoxHeight = height;
-        this.health = 3; // starting health
+        this.health = 4; // starting health
         this.isInvulnerable = false;
         // idle, walk, jump, idle frames, walk frames, jump frames,
         animationHandler = new AnimationHandler(idleTexturePath, walkTexturePath, jumpTexturePath, idleFrames, walkFrames, jumpFrames);
@@ -120,7 +120,7 @@ public class Player extends Entity {
         // Create and return the smaller bounding box
         return new Rectangle(getX() + xOffset, getY() + yOffset, shrunkWidth, shrunkHeight);
     }
-    
+
     @Override
     public void update(float deltaTime) {
         if (isInvulnerable) {
@@ -135,6 +135,7 @@ public class Player extends Entity {
             // Prevent movement logic here, or simply skip movement update
             return; // Skip the rest of the update if stunned
         }
+
     }
 
     @Override
@@ -252,6 +253,7 @@ public class Player extends Entity {
         this.isInvulnerable = isInvulnerable;
         this.invulnerableTime = duration;
     }
+
 
     public boolean isInvulnerable() {
         return isInvulnerable;
