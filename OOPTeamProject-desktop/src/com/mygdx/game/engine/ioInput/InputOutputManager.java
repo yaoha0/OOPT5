@@ -8,12 +8,13 @@ import com.badlogic.gdx.audio.Sound;
 import game.entity.Player;
 import game.managers.PlayerControlManager;
 import engine.simulationLC.PopupManager;
+import engine.simulationLC.SimulationLifeCycle;
 import engine.scene.ScreenManager;
 import engine.simulationLC.Ellipsis;
 
 public class InputOutputManager implements InputProcessor {
     private PlayerControlManager playerControlManager;
-    private ScreenManager screenManager;
+    private SimulationLifeCycle simulationLifeCycle;
     private Player player;
     private PopupManager popupManager;
     private Ellipsis ellipsis;
@@ -22,11 +23,12 @@ public class InputOutputManager implements InputProcessor {
     private Sound ingameSound;
     private long ingameSoundId;
 
-    public InputOutputManager(Player player ,PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis) {
+    public InputOutputManager(Player player ,PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis,SimulationLifeCycle simulationLifeCycle ) {
         this.playerControlManager = playerControlManager;
         this.popupManager = popupManager;
         this.ellipsis = ellipsis;
         this.player = player;
+        this.simulationLifeCycle = simulationLifeCycle;
         
         // Register this class as the input processor
         Gdx.input.setInputProcessor(this);
@@ -125,26 +127,40 @@ public class InputOutputManager implements InputProcessor {
 
         float touchX = screenX;
         float touchY = Gdx.graphics.getHeight() - screenY;
+        Gdx.app.log("TouchDown", "Touch at: " + touchX + ", " + touchY);
         
-        if (ellipsis != null && touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
+        //Input Handling for Ellipsis Pop up & Menu
+        if (touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
                 touchY >= ellipsis.getY() && touchY <= ellipsis.getY() + ellipsis.getHeight()) {
             popupManager.togglePopupVisibility();
+            popupManager.toggleGamePause();
             ingameSound.pause(ingameSoundId);
             return true;
         }
-
+        
+        //Input Handling for Resume and Exit Button
         if (popupManager.isPopupVisible()) {
             // Assuming PopupManager has methods like isPauseButtonClicked(touchX, touchY) and isExitButtonClicked(touchX, touchY)
             if (isPauseButtonClicked(touchX, touchY)) {
                 popupManager.toggleGamePause();
-                ingameSound.pause(ingameSoundId);// This method should handle toggling the pause state and calling simulationLifeCycle methods as needed
+                ingameSound.resume(ingameSoundId);
             } else if (isExitButtonClicked(touchX, touchY)) {
             	stopInGameSound();
             	popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
             }
             return true; // Consume the touch event if it's within the PopUp
         }
+        
+        //Input Handling for Information Pop up
+        if (popupManager.infoPopupVisible) {
+        	popupManager.infoPopupVisible=false;
+        	simulationLifeCycle.resumeGame();
+        }
+        
         return false;
+        
+        
+        
     }
     
 
