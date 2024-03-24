@@ -1,8 +1,16 @@
-package com.mygdx.game;
+package engine.rendering;
 
-
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import com.badlogic.gdx.math.Matrix4;
+import engine.collision.CollisionManager;
+import engine.entity.EntityManager;
+import engine.simulationLC.Ellipsis;
+import game.entity.Player;
 import game.screens.EndScreen;
 import game.screens.PlayScreen;
 import engine.scene.ScreenManager;
@@ -74,3 +82,4 @@ public class GameRenderer {
         batch.dispose();
         shapeRenderer.dispose();
     }
+}
