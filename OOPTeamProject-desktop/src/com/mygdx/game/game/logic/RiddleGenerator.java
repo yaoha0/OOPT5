@@ -11,7 +11,7 @@ public class RiddleGenerator {
     private Player player;
 
     private String[] riddles = {
-            "I'm closest to the burning sun's embrace,\nMy surface scorched, a fiery place.\nMercury is my name, swift in my flight,\nIn the solar system, I shine bright. What am I?",
+            "I orbit the sun, the very first in line,\nNo rings on my fingers, no companion to find.\nNamed for a god, swift and fleet,\nIn the solar system's race, I'm hard to beat.",
             "I'm blue and green, a world of wonder,\nWith swirling clouds, a cosmic thunder.\nLife flourishes upon my sphere,\nA jewel of the sky, oh so dear. What am I?",
             "Red and dusty, a desert vast,\nStorms rage on, they're unsurpassed.\nNamed for the god of war's domain,\nIn the heavens, I firmly reign. What am I?"
     };
