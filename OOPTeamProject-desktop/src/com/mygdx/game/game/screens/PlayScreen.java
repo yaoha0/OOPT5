@@ -94,8 +94,8 @@ public class PlayScreen implements Screen {
         //initialize
         initializeComponents();
         initializeEntities();
-        initializeManagers();
         initializeUI();
+        initializeManagers();
         initializeCamera();
     }
 
@@ -177,18 +177,20 @@ public class PlayScreen implements Screen {
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
-
+        
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis);
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,  simulationLifeCycle);
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
-        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager);
+        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager, popupManager);
 
         // game render (UI etc)
         gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
         cameraManager.initializeCamera(player); // Set the initial camera position
         //inputOutputManager.playInGameSound();
+        
+     
     }
 
     private void clearScreen() {
