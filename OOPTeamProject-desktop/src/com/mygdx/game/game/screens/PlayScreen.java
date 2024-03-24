@@ -1,45 +1,37 @@
-package com.mygdx.game.game.scene;
+package game.screens;
 
-// GDX Libraries imports
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-// Management Packages imports
+import engine.collision.CollisionManager;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.DesktopLauncher;
-import com.mygdx.game.engine.aiControl.AiControlManager;
-import com.mygdx.game.engine.aiControl.DecisionMaking;
-import com.mygdx.game.engine.aiControl.DetectionSystem;
-import com.mygdx.game.engine.aiControl.PathfindingSystem;
-import com.mygdx.game.engine.collision.CollisionManager;
-import com.mygdx.game.engine.entity.LevelGenerator;
-import com.mygdx.game.engine.rendering.Camera;
-import com.mygdx.game.engine.rendering.CameraManager;
-import com.mygdx.game.engine.rendering.GameRenderer;
-import com.mygdx.game.engine.scene.ScreenManager;
-import com.mygdx.game.game.aiControl.NonControlled;
-import com.mygdx.game.game.entity.*;
-import com.mygdx.game.engine.entity.EntityManager;
-
-import com.mygdx.game.engine.ioInput.InputOutputManager;
-import com.mygdx.game.game.managers.PlayerControlManager;
-import com.mygdx.game.engine.simulationLC.Ellipsis;
-import com.mygdx.game.engine.simulationLC.PopupManager;
-import com.mygdx.game.engine.simulationLC.SimulationLifeCycle;
+import engine.aiControl.PathfindingSystem;
+import engine.aiControl.AiControlManager;
+import engine.aiControl.DecisionMaking;
+import engine.aiControl.DetectionSystem;
+import engine.entity.EntityManager;
+import engine.entity.LevelGenerator;
+import engine.rendering.Camera;
+import engine.rendering.CameraManager;
+import engine.rendering.GameRenderer;
+import engine.scene.ScreenManager;
+import engine.simulationLC.Ellipsis;
+import engine.simulationLC.PopupManager;
+import engine.simulationLC.SimulationLifeCycle;
+import game.aiControl.NonControlled;
+import engine.ioInput.InputOutputManager;
+import game.entity.*;
+import game.managers.PlayerControlManager;
 import com.mygdx.game.GameMaster;
 
 import java.util.ArrayList;
-import com.mygdx.game.game.entity.Platform;
-
-
 
 public class PlayScreen implements Screen {
     // attributes
@@ -64,7 +56,6 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PlayerControlManager playerControlManager;
     private PopupManager popupManager;
-    private ScreenManager screenManager;
 
     // Class attributes
     private PathfindingSystem pathfindingSystem;
@@ -77,10 +68,8 @@ public class PlayScreen implements Screen {
     private GameRenderer gameRenderer;
     private CameraManager cameraManager;
 
-    private Texture heart;
-
     private ArrayList<Float> holePositions; // Add this attribute
-    private ArrayList<com.mygdx.game.game.entity.Platform> platforms;
+    private ArrayList<Platform> platforms; // Add this to store platform tiles
     private ArrayList<Platform> elevatedPlatforms;
     private ShapeRenderer shapeRenderer;
 
@@ -114,10 +103,6 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         clearScreen();
 
-        batch.begin();
-        drawHearts();
-        batch.end();
-
         updateCameraAndRender(delta);
         // Handle input and render PopUp
         popupManager.render();
@@ -134,20 +119,12 @@ public class PlayScreen implements Screen {
         shapeRenderer = new ShapeRenderer();
         // Create a static projection matrix for UI elements
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        heart = new Texture("entity/objects/heart.png");
-        System.out.println("Heart texture loaded");
 
         // decision making components
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         nonControlled = new NonControlled(pathfindingSystem);
-    }
-
-    private void drawHearts() {
-        for (int i = 0; i < player.getHealth(); i++) {
-            batch.draw(heart, Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
-        }
     }
 
     private void initializeEntities() {
@@ -185,7 +162,7 @@ public class PlayScreen implements Screen {
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
         cameraManager.initializeCamera(player);
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager);
     }
     private void initializeManagers() {
         // simulation lifecycle manager
@@ -195,23 +172,25 @@ public class PlayScreen implements Screen {
         // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
         // popUp manager
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera1);
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera);
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
-
+        
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle);
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,  simulationLifeCycle);
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
         collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager, popupManager);
 
         // game render (UI etc)
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
         cameraManager.initializeCamera(player); // Set the initial camera position
         //inputOutputManager.playInGameSound();
+        
+     
     }
 
     private void clearScreen() {
@@ -279,7 +258,7 @@ public class PlayScreen implements Screen {
         shapeRenderer.dispose();
         player.dispose();
         enemy.dispose();
-        heart.dispose();
+
     }
 
     public Platform[] getPlatforms() {
