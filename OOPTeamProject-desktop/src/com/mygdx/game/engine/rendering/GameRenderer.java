@@ -1,78 +1,49 @@
-package com.mygdx.game.engine.rendering;
+package com.mygdx.game;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import game.screens.EndScreen;
+import game.screens.PlayScreen;
+import engine.scene.ScreenManager;
+import engine.simulationLC.SimulationLifeCycle;
+
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
-import com.mygdx.game.engine.collision.CollisionManager;
-import com.mygdx.game.engine.entity.EntityManager;
-import com.mygdx.game.engine.simulationLC.Ellipsis;
-import com.mygdx.game.game.entity.Player;
 
-public class GameRenderer {
-    private SpriteBatch batch;
-    private ShapeRenderer shapeRenderer;
-    private OrthographicCamera camera;
-    private EntityManager entityManager;
-    private Texture backgroundTexture;
-    private BitmapFont font;
-    private Ellipsis ellipsis;
-    private Matrix4 uiMatrix;
-    private Texture heart;
-    private Player player;
-    private CollisionManager collisionManager; // Pass a reference to access the collectible count
+public class GameMaster extends Game {
+	private static GameMaster instance = null;
+	
+	public SpriteBatch batch;
+	public ShapeRenderer shape;
+	public ScreenManager screenManager;
+	public PlayScreen playScreen;
+	public EndScreen endScreen;
+	public SimulationLifeCycle simulationLifeCycle;
+	
+	private GameMaster() {}
 
-    public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
-        this.batch = batch;
-        this.camera = camera;
-        this.uiMatrix = uiMatrix;
-        this.entityManager = entityManager;
-        this.backgroundTexture = backgroundTexture;
-        this.font = font;
-        this.ellipsis = ellipsis;
-        this.collisionManager = collisionManager;
-        this.heart = heart;
-        this.player = player;
-        this.shapeRenderer = new ShapeRenderer();
-    }
-
-    public void render(float delta, OrthographicCamera camera, Matrix4 uiMatrix) {
-        // Clear the screen, set the camera, begin the batch, draw background, entities, etc.
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-        //Draw background image
-        batch.draw(backgroundTexture, (-Gdx.graphics.getWidth()), (-Gdx.graphics.getHeight()), (Gdx.graphics.getWidth()*4), (Gdx.graphics.getHeight())*4);
-        entityManager.renderBatch(batch);
-        batch.end();
-
-        // Render UI elements with static projection matrix
-        batch.setProjectionMatrix(uiMatrix);
-        batch.begin();
-        // Put ellipsis at top right
-        batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-        String collectedLetters = player.getCollectedLetters();
-        font.draw(batch, "Collected Letters: " + collectedLetters, 10, Gdx.graphics.getHeight() - 50);
-
-        // Draw hearts
-        for (int i = 0; i < player.getHealth(); i++) {
-            batch.draw(heart, 50 + i * (heart.getWidth() + 10), 50);
-        }
-
-        //renderBounds();
-        batch.end();
-
-        // Shape rendering if necessary
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        // ... (drawing shapes code)
-        shapeRenderer.end();
-    }
-
-    public void dispose() {
-        batch.dispose();
-        shapeRenderer.dispose();
-    }
+	public static GameMaster getInstance() {
+		if (instance == null) {
+			instance = new GameMaster();
+		}
+		return instance;
+	}
+	
+	@Override
+	public void create() {
+	    batch = new SpriteBatch();
+	    shape = new ShapeRenderer();
+	    simulationLifeCycle = new SimulationLifeCycle(this); // Pass 'this' as the GameMaster instance
+	    screenManager = ScreenManager.getInstance();
+	    
+	    screenManager.initialize(this, batch, simulationLifeCycle); // Make sure MainMenuScreen is initialized inside this method
+	    /* commented out the code below because it was calling initialize twice*/
+	    //playScreen = new PlayScreen(batch);
+	    //endScreen = new EndScreen(batch, simulationLifeCycle);
+	    //tell the SLC to start game, then it calls the mainscreen
+	    simulationLifeCycle.startGame(); 
+	}
+    
+    
 }
