@@ -56,6 +56,7 @@ public class PlayScreen implements Screen {
     private InputOutputManager inputOutputManager;
     private PlayerControlManager playerControlManager;
     private PopupManager popupManager;
+    private ScreenManager screenManager;
 
     // Class attributes
     private PathfindingSystem pathfindingSystem;
@@ -68,8 +69,10 @@ public class PlayScreen implements Screen {
     private GameRenderer gameRenderer;
     private CameraManager cameraManager;
 
+    private Texture heart;
+
     private ArrayList<Float> holePositions; // Add this attribute
-    private ArrayList<Platform> platforms; // Add this to store platform tiles
+    private ArrayList<com.mygdx.game.game.entity.Platform> platforms;
     private ArrayList<Platform> elevatedPlatforms;
     private ShapeRenderer shapeRenderer;
 
@@ -103,6 +106,10 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         clearScreen();
 
+        batch.begin();
+        drawHearts();
+        batch.end();
+
         updateCameraAndRender(delta);
         // Handle input and render PopUp
         popupManager.render();
@@ -119,12 +126,20 @@ public class PlayScreen implements Screen {
         shapeRenderer = new ShapeRenderer();
         // Create a static projection matrix for UI elements
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        heart = new Texture("entity/objects/heart.png");
+        System.out.println("Heart texture loaded");
 
         // decision making components
         detectionSystem = new DetectionSystem();
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         nonControlled = new NonControlled(pathfindingSystem);
+    }
+
+    private void drawHearts() {
+        for (int i = 0; i < player.getHealth(); i++) {
+            batch.draw(heart, Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+        }
     }
 
     private void initializeEntities() {
@@ -162,7 +177,7 @@ public class PlayScreen implements Screen {
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
         cameraManager.initializeCamera(player);
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
     }
     private void initializeManagers() {
         // simulation lifecycle manager
@@ -172,25 +187,23 @@ public class PlayScreen implements Screen {
         // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
         // popUp manager
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera);
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera1);
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
-        
+
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,  simulationLifeCycle);
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle);
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
         collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager, popupManager);
 
         // game render (UI etc)
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font,ellipsis,collisionManager);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
         cameraManager.initializeCamera(player); // Set the initial camera position
         //inputOutputManager.playInGameSound();
-        
-     
     }
 
     private void clearScreen() {
@@ -258,7 +271,7 @@ public class PlayScreen implements Screen {
         shapeRenderer.dispose();
         player.dispose();
         enemy.dispose();
-
+        heart.dispose();
     }
 
     public Platform[] getPlatforms() {
