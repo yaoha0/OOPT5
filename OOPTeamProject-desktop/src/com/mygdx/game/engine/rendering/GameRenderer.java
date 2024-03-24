@@ -1,6 +1,5 @@
-package engine.rendering;
+package com.mygdx.game.engine.rendering;
 
-import engine.collision.CollisionManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -8,8 +7,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
-import engine.entity.EntityManager;
-import engine.simulationLC.Ellipsis;
+import com.mygdx.game.engine.collision.CollisionManager;
+import com.mygdx.game.engine.entity.EntityManager;
+import com.mygdx.game.engine.simulationLC.Ellipsis;
+import com.mygdx.game.game.entity.Player;
 
 public class GameRenderer {
     private SpriteBatch batch;
@@ -20,17 +21,21 @@ public class GameRenderer {
     private BitmapFont font;
     private Ellipsis ellipsis;
     private Matrix4 uiMatrix;
+    private Texture heart;
+    private Player player;
     private CollisionManager collisionManager; // Pass a reference to access the collectible count
 
-    public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager) {
+    public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
         this.batch = batch;
         this.camera = camera;
-        this.uiMatrix = uiMatrix; // You might have a separate camera for UI
+        this.uiMatrix = uiMatrix;
         this.entityManager = entityManager;
         this.backgroundTexture = backgroundTexture;
         this.font = font;
         this.ellipsis = ellipsis;
         this.collisionManager = collisionManager;
+        this.heart = heart;
+        this.player = player;
         this.shapeRenderer = new ShapeRenderer();
     }
 
@@ -48,7 +53,14 @@ public class GameRenderer {
         batch.begin();
         // Put ellipsis at top right
         batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
-        font.draw(batch, String.valueOf(collisionManager.getCollectibleCount()), 10, Gdx.graphics.getHeight() - 50);
+        String collectedLetters = player.getCollectedLetters();
+        font.draw(batch, "Collected Letters: " + collectedLetters, 10, Gdx.graphics.getHeight() - 50);
+
+        // Draw hearts
+        for (int i = 0; i < player.getHealth(); i++) {
+            batch.draw(heart, 50 + i * (heart.getWidth() + 10), 50);
+        }
+
         //renderBounds();
         batch.end();
 
