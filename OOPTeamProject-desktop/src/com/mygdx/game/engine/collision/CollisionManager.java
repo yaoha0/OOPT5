@@ -6,6 +6,7 @@ import engine.entity.Entity;
 import engine.entity.EntityManager;
 import engine.ioInput.InputOutputManager;
 import engine.scene.ScreenManager;
+import engine.simulationLC.PopupManager;
 import game.entity.*;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class CollisionManager {
     private ArrayList<Platform> platforms;
     private InputOutputManager inputOutputManager;
     private EntityManager entityManager;
+    private PopupManager popupManager;
     private static final int LEFT_BOUNDARY = 0;
     private static final int RIGHT_BOUNDARY = Gdx.graphics.getWidth();
     private float tolerance = 0.1f;
@@ -26,14 +28,14 @@ public class CollisionManager {
         NONE, HORIZONTAL, VERTICAL
     }
 
-    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager, EntityManager entityManager) {
+    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager, EntityManager entityManager, PopupManager popupManager) {
         this.screenManager = screenManager;
         this.collectibleCount = 0;
         this.holePositions = holePositions;
         this.platforms = platforms;
         this.inputOutputManager = inputOutputManager;
         this.entityManager = entityManager;
-
+        this.popupManager = popupManager;
 
     }
 
@@ -201,6 +203,7 @@ public class CollisionManager {
             // Increment the collectible count
             collectibleCount++;
             inputOutputManager.playCollectSound();
+            popupManager.showinfoPopup();
 
             // Remove the collectible from the screen and the entity manager
             entityManager.removeEntity(collectible);
@@ -379,5 +382,4 @@ public class CollisionManager {
         return false;
     }
 }
-
 
