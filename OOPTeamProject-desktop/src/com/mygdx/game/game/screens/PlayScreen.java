@@ -72,7 +72,7 @@ public class PlayScreen implements Screen {
     private Texture heart;
 
     private ArrayList<Float> holePositions; // Add this attribute
-    private ArrayList<Platform> platforms;
+    private ArrayList<com.mygdx.game.game.entity.Platform> platforms;
     private ArrayList<Platform> elevatedPlatforms;
     private ShapeRenderer shapeRenderer;
 
@@ -98,8 +98,8 @@ public class PlayScreen implements Screen {
         initializeComponents();
         initializeEntities();
         initializeUI();
-        initializeManagers();
         initializeCamera();
+        initializeManagers();
     }
 
     @Override
@@ -187,14 +187,16 @@ public class PlayScreen implements Screen {
         // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
         // popUp manager
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera1);
+        RiddleGenerator riddleGenerator = new RiddleGenerator(player);
+        riddleGenerator.startNewRiddle();
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera1, riddleGenerator);
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
 
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle);
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle,gameRenderer.getExclamTexture());
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
