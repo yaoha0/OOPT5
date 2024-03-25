@@ -18,28 +18,30 @@ public class InputOutputManager implements InputProcessor {
     private Player player;
     private PopupManager popupManager;
     private Ellipsis ellipsis;
+    private Texture exclamTexture;
     private Sound collectSound;
     private Sound gameOverSound;
     private Sound ingameSound;
     private long ingameSoundId;
 
-    public InputOutputManager(Player player ,PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis,SimulationLifeCycle simulationLifeCycle ) {
+    public InputOutputManager(Player player , PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis, SimulationLifeCycle simulationLifeCycle,Texture exclamTexture) {
         this.playerControlManager = playerControlManager;
         this.popupManager = popupManager;
         this.ellipsis = ellipsis;
         this.player = player;
-        this.simulationLifeCycle = simulationLifeCycle;
-        
+        this.simulationLifeCycle= simulationLifeCycle;
+        this.exclamTexture = exclamTexture;
+
         // Register this class as the input processor
         Gdx.input.setInputProcessor(this);
         loadSounds();
     }
-    
+
     public void loadSounds() {
-	    collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
-	    gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
-	    ingameSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/ingame.mp3"));
-	    ingameSoundId = ingameSound.loop();
+        collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
+        gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
+        ingameSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/ingame.mp3"));
+        ingameSoundId = ingameSound.loop();
     }
 
     @Override
@@ -60,7 +62,7 @@ public class InputOutputManager implements InputProcessor {
             case Input.Keys.ESCAPE:
                 if (popupManager.isPopupVisible()) {
                     // Only resume if PopUp is visible
-                	ingameSound.resume(ingameSoundId);
+                    ingameSound.resume(ingameSoundId);
                     popupManager.resumeGame();
                     System.out.println("Game resumed."); // Resume the game
                     break;
@@ -121,48 +123,57 @@ public class InputOutputManager implements InputProcessor {
         return false;//touch outside bound
     }
 
+    public boolean isExclamTextureClicked(float x, float y) {
+        float padding = 30; // Space between the exclamation mark and the ellipsis button
+        float exclamX = ellipsis.getX() - exclamTexture.getWidth() - padding;
+        float exclamY = ellipsis.getY();
+        float exclamWidth = ellipsis.getWidth();
+        float exclamHeight = ellipsis.getHeight();
+
+        if (x > exclamX && x < exclamX + exclamWidth && y > exclamY && y < exclamY + exclamHeight) {
+            return true; // Touch inside bounds
+        }
+        return false; // Touch outside bounds
+    }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-
         float touchX = screenX;
         float touchY = Gdx.graphics.getHeight() - screenY;
-        Gdx.app.log("TouchDown", "Touch at: " + touchX + ", " + touchY);
-        
-        //Input Handling for Ellipsis Pop up & Menu
-        if (touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
+
+
+        if (ellipsis != null && touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
                 touchY >= ellipsis.getY() && touchY <= ellipsis.getY() + ellipsis.getHeight()) {
             popupManager.togglePopupVisibility();
-            popupManager.toggleGamePause();
             ingameSound.pause(ingameSoundId);
             return true;
         }
-        
-        //Input Handling for Resume and Exit Button
+
+        if (isExclamTextureClicked(touchX, touchY)) {
+            System.out.println("Exclamation texture clicked");
+            popupManager.showQuestPopup();
+            return true;
+        }
+
+        if (popupManager.questPopupVisible) {
+            popupManager.hideQuestPopup();
+            return true;
+        }
+
         if (popupManager.isPopupVisible()) {
             // Assuming PopupManager has methods like isPauseButtonClicked(touchX, touchY) and isExitButtonClicked(touchX, touchY)
             if (isPauseButtonClicked(touchX, touchY)) {
                 popupManager.toggleGamePause();
-                ingameSound.resume(ingameSoundId);
+                ingameSound.pause(ingameSoundId);// This method should handle toggling the pause state and calling simulationLifeCycle methods as needed
             } else if (isExitButtonClicked(touchX, touchY)) {
-            	stopInGameSound();
-            	popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
+                stopInGameSound();
+                popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
             }
             return true; // Consume the touch event if it's within the PopUp
         }
-        
-        //Input Handling for Information Pop up
-        if (popupManager.infoPopupVisible) {
-        	popupManager.infoPopupVisible=false;
-        	simulationLifeCycle.resumeGame();
-        }
-        
         return false;
-        
-        
-        
     }
-    
+
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -192,22 +203,24 @@ public class InputOutputManager implements InputProcessor {
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
         return false;
     }
-    
+
     public void playCollectSound() {
         collectSound.play();
     }
-    
+
     public void playGameOverSound() {
         gameOverSound.play();
     }
-    
+
     public void playInGameSound() {
         ingameSound.play();
     }
-    
+
     public void stopInGameSound() {
         ingameSound.stop();
     }
+
+
 
 
     /*public void update(float deltaTime) {
