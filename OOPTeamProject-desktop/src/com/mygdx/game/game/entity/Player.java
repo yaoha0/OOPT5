@@ -8,6 +8,7 @@ import engine.entity.AnimationHandler;
 import engine.entity.Entity;
 
 import java.util.Objects;
+import java.util.Random;
 
 public class Player extends Entity {
     private float velocityY, velocityX = 0;
@@ -29,7 +30,7 @@ public class Player extends Entity {
 
     private boolean isCollidingSide;
     private AnimationHandler animationHandler;
-    private boolean isWalking, isJumping, isFacingLeft, hasFallen = false;
+    private boolean isWalking, isJumping, isFacingLeft, isFalling = false;
     public static final float PIT_LEVEL = -300;
 
     private float boundingBoxWidth;
@@ -41,9 +42,10 @@ public class Player extends Entity {
     private float invulnerableTime;
 
     private float stunTime;
-    private String targetWord = "NEPTUNE";
+    private String targetWord;
     private StringBuilder collectedLetters = new StringBuilder();
 
+    private String[] possibleTargetWords;
     // Method to retrieve the AnimationHandler instance
     public AnimationHandler getAnimationHandler() {
         return this.animationHandler;
@@ -58,6 +60,7 @@ public class Player extends Entity {
         this.boundingBoxHeight = height;
         this.health = 4; // starting health
         this.isInvulnerable = false;
+
         // idle, walk, jump, idle frames, walk frames, jump frames,
         animationHandler = new AnimationHandler(idleTexturePath, walkTexturePath, jumpTexturePath, idleFrames, walkFrames, jumpFrames);
     }
@@ -120,7 +123,7 @@ public class Player extends Entity {
         // Create and return the smaller bounding box
         return new Rectangle(getX() + xOffset, getY() + yOffset, shrunkWidth, shrunkHeight);
     }
-
+    
     @Override
     public void update(float deltaTime) {
         if (isInvulnerable) {
@@ -135,7 +138,6 @@ public class Player extends Entity {
             // Prevent movement logic here, or simply skip movement update
             return; // Skip the rest of the update if stunned
         }
-
     }
 
     @Override
@@ -155,15 +157,38 @@ public class Player extends Entity {
         } else {
             this.setY(0); // Set Y position to the yPosition passed, can be the platform's Y or ground level
             this.setVelocityY(0); // Stop falling
-            this.hasFallen = false; // Player has landed and is no longer falling
+            this.isFalling = false; // Player has landed and is no longer falling
             this.isOnGround = true; // Player is now on the ground
 
         }
 
     }
+
+    public void startFalling() {
+        if (!isOnGround && !isFalling) {
+            isFalling = true;
+        }
+    }
+
+    public void checkFall() {
+        if (isFalling && getY() < PIT_LEVEL) {
+            // Player has fallen into the pit
+            isFalling = false; // Reset the flag
+            // Perform the actions needed when a player falls into a pit
+            reduceHealth();
+            resetToSafePosition();
+        }
+    }
+
+    public void resetToSafePosition() {
+        setX(getLastSafeX());
+        setY(getLastSafeY());
+        setVelocityY(0); // Stop falling
+    }
+
     // Method to update the last safe position
     public void updateLastSafePosition() {
-        if (this.isOnGround && !this.hasFallen) {
+        if (this.isOnGround && !this.isFalling) {
             lastSafeX = this.x;
             lastSafeY = this.y;
         }
@@ -186,18 +211,25 @@ public class Player extends Entity {
     public void reduceHealth() {
         if (!isInvulnerable) {
             health--;
+            System.out.println("Health reduced to: " + health);
             if (health > 0) {
                 setInvulnerable(true, 2.0f); // 2 seconds of invulnerability
                 stunTime = 0.5f; // Stunned for 0.5 seconds
             }
         }
-
-        System.out.println("reduceHealth function: " + health);
     }
 
 
     public String getTargetWord() {
         return targetWord;
+    }
+    public void setTargetWord(String word) { this.targetWord = word; }
+
+    public void setPossibleTargetWords(String[] words) {
+        this.possibleTargetWords = words;
+        // Optionally, select a new target word immediately after setting possible words
+        Random random = new Random();
+        this.targetWord = possibleTargetWords[random.nextInt(possibleTargetWords.length)];
     }
 
     public String getCollectedLetters() {
@@ -212,7 +244,7 @@ public class Player extends Entity {
     public boolean getIsWalking () { return isWalking; }
     public boolean isJumping () { return isJumping; }
     public boolean getIsFacingLeft () { return isFacingLeft; }
-    public boolean getHasFallen() {return hasFallen;}
+    public boolean isFalling() {return isFalling;}
     public float getLastSafeX() { return lastSafeX; }
     public float getLastSafeY() { return lastSafeY; }
     public float getPrevX() { return prevX; }
@@ -225,9 +257,10 @@ public class Player extends Entity {
     public void setIsOnPlatform(boolean onPlatform) { this.isOnPlatform = onPlatform; }
     public void setIsOnGround(boolean onGround) { this.isOnGround = onGround; }
     public void setIsWalking(boolean walking) { this.isWalking = walking; }
+    public void setIsFalling(boolean falling) { this.isFalling = falling; }
     public void setIsJumping(boolean jumping) { this.isJumping = jumping; }
     public void setIsFacingLeft(boolean facingLeft) { this.isFacingLeft = facingLeft; }
-    public void setHasFallen(boolean hasFallen) { this.hasFallen = hasFallen; }
+    public void setHasFallen(boolean hasFallen) { this.isFalling = hasFallen; }
     public void setLastSafeY(float lastSafeY) { this.lastSafeY = lastSafeY; }
     public void setLastSafeX(float lastSafeX) { this.lastSafeX = lastSafeX; }
     public void setPrevX(float prevX) { this.prevX = prevX; }
@@ -253,7 +286,6 @@ public class Player extends Entity {
         this.isInvulnerable = isInvulnerable;
         this.invulnerableTime = duration;
     }
-
 
     public boolean isInvulnerable() {
         return isInvulnerable;
