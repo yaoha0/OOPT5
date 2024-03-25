@@ -19,20 +19,7 @@ import engine.simulationLC.SimulationLifeCycle;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class GameRenderer {
-    private SpriteBatch batch;
-    private ShapeRenderer shapeRenderer;
-    private OrthographicCamera camera;
-    private EntityManager entityManager;
-    private Texture backgroundTexture;
-    private BitmapFont font;
-    private Ellipsis ellipsis;
-    private Matrix4 uiMatrix;
-    private Texture heart;
-    private Player player;
-    private CollisionManager collisionManager; // Pass a reference to access the collectible count
-
-    public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
+public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
         this.batch = batch;
         this.camera = camera;
         this.uiMatrix = uiMatrix;
@@ -44,6 +31,7 @@ public class GameRenderer {
         this.heart = heart;
         this.player = player;
         this.shapeRenderer = new ShapeRenderer();
+        this.exclamTexture = new Texture("simulationLC/questbtn.png");
     }
 
     public void render(float delta, OrthographicCamera camera, Matrix4 uiMatrix) {
@@ -51,15 +39,23 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         //Draw background image
-        batch.draw(backgroundTexture, (-Gdx.graphics.getWidth()), (-Gdx.graphics.getHeight()), (Gdx.graphics.getWidth()*4), (Gdx.graphics.getHeight())*4);
+        batch.draw(backgroundTexture, (-Gdx.graphics.getWidth()), (-Gdx.graphics.getHeight()), (Gdx.graphics.getWidth() * 4), (Gdx.graphics.getHeight()) * 4);
         entityManager.renderBatch(batch);
         batch.end();
 
         // Render UI elements with static projection matrix
         batch.setProjectionMatrix(uiMatrix);
         batch.begin();
+
+        // Draw exclam.png to the left of the ellipsis button
+        float padding = 30; // Space between the exclamation mark and the ellipsis button
+        float exclamX = ellipsis.getX() - exclamTexture.getWidth() - padding;
+        float exclamY = ellipsis.getY();
+
         // Put ellipsis at top right
         batch.draw(ellipsis.getTexture(), ellipsis.getX(), ellipsis.getY(), ellipsis.getWidth(), ellipsis.getHeight());
+        batch.draw(exclamTexture, exclamX, exclamY, ellipsis.getWidth(), ellipsis.getHeight());
+
         String collectedLetters = player.getCollectedLetters();
         font.draw(batch, "Collected Letters: " + collectedLetters, 10, Gdx.graphics.getHeight() - 50);
 
@@ -78,8 +74,13 @@ public class GameRenderer {
         shapeRenderer.end();
     }
 
+    public Texture getExclamTexture() {
+        return exclamTexture;
+    }
+
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();
+        exclamTexture.dispose();
     }
 }
