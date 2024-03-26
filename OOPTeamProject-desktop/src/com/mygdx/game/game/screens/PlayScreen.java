@@ -200,10 +200,10 @@ public class PlayScreen implements Screen {
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
-        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager, popupManager);
+        collisionManager = new CollisionManager(screenManager, holePositions, platforms, inputOutputManager, entityManager, popupManager, playerControlManager, levelGenerator);
 
         // game render (UI etc)
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player, platforms);
         cameraManager.initializeCamera(player); // Set the initial camera position
         //inputOutputManager.playInGameSound();
     }
