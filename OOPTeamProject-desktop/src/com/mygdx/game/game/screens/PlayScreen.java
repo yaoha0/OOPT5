@@ -17,7 +17,7 @@ import engine.aiControl.AiControlManager;
 import engine.aiControl.DecisionMaking;
 import engine.aiControl.DetectionSystem;
 import engine.entity.EntityManager;
-import engine.level.LevelGenerator;
+import game.level.LevelGenerator;
 import engine.rendering.Camera;
 import engine.rendering.CameraManager;
 import engine.rendering.GameRenderer;
@@ -28,6 +28,7 @@ import engine.simulationLC.SimulationLifeCycle;
 import game.aiControl.NonControlled;
 import engine.ioInput.InputOutputManager;
 import game.entity.*;
+import game.logic.RiddleGenerator;
 import game.managers.PlayerControlManager;
 import com.mygdx.game.GameMaster;
 
@@ -64,15 +65,17 @@ public class PlayScreen implements Screen {
     private DecisionMaking decisionMaking;
     private NonControlled nonControlled;
     private LevelGenerator levelGenerator;
-    private String[] letters = {"N", "E", "P", "T", "U", "N", "E"};
+    private String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M","N","O","P","Q","R",
+    "S","T","U","V","W","X","Y","Z"};
 
     private GameRenderer gameRenderer;
     private CameraManager cameraManager;
 
     private Texture heart;
 
+    private RiddleGenerator riddleGenerator;
     private ArrayList<Float> holePositions; // Add this attribute
-    private ArrayList<com.mygdx.game.game.entity.Platform> platforms;
+    private ArrayList<Platform> platforms;
     private ArrayList<Platform> elevatedPlatforms;
     private ShapeRenderer shapeRenderer;
 
@@ -157,6 +160,8 @@ public class PlayScreen implements Screen {
         entityManager.addEntity(player);
         entityManager.addEntity(enemy);
 
+        riddleGenerator = new RiddleGenerator(player);
+        riddleGenerator.startNewRiddle();
         //spawnCollectibles();
         this.lastPlatformX = 0; // Start from the beginning of the screen
 
@@ -177,8 +182,9 @@ public class PlayScreen implements Screen {
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
         cameraManager.initializeCamera(player);
-        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player);
+        gameRenderer = new GameRenderer(batch, camera, uiMatrix, entityManager, backgroundTexture, font, ellipsis, collisionManager, heart, player, platforms);
     }
+
     private void initializeManagers() {
         // simulation lifecycle manager
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
@@ -189,14 +195,14 @@ public class PlayScreen implements Screen {
         // popUp manager
         RiddleGenerator riddleGenerator = new RiddleGenerator(player);
         riddleGenerator.startNewRiddle();
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera1, riddleGenerator);
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera1); //, riddleGenerator
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
 
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle,gameRenderer.getExclamTexture());
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle); //gameRenderer.getExclamTexture()
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
