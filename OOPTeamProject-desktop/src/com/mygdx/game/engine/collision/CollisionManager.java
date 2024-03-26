@@ -8,6 +8,8 @@ import engine.ioInput.InputOutputManager;
 import engine.scene.ScreenManager;
 import engine.simulationLC.PopupManager;
 import game.entity.*;
+import game.level.LevelGenerator;
+import game.managers.PlayerControlManager;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -20,14 +22,17 @@ public class CollisionManager {
     private InputOutputManager inputOutputManager;
     private EntityManager entityManager;
     private PopupManager popupManager;
+    private PlayerControlManager controlManager;
+    private LevelGenerator levelGenerator;
     private static final int LEFT_BOUNDARY = 0;
     private static final int RIGHT_BOUNDARY = Gdx.graphics.getWidth();
     private float tolerance = 0.1f;
+    private boolean isOverHole = false;
     public enum CollisionDirection {
         NONE, HORIZONTAL, VERTICAL
     }
 
-    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager, EntityManager entityManager, PopupManager popupManager) {
+    public CollisionManager(ScreenManager screenManager, ArrayList<Float> holePositions, ArrayList<Platform> platforms, InputOutputManager inputOutputManager, EntityManager entityManager, PopupManager popupManager, PlayerControlManager playerControlManager, LevelGenerator levelGenerator) {
         this.screenManager = screenManager;
         this.collectibleCount = 0;
         this.holePositions = holePositions;
@@ -35,8 +40,8 @@ public class CollisionManager {
         this.inputOutputManager = inputOutputManager;
         this.entityManager = entityManager;
         this.popupManager = popupManager;
-
-
+        this.controlManager = playerControlManager;
+        this.levelGenerator = levelGenerator;
     }
 
     public int getCollectibleCount() {
@@ -90,9 +95,30 @@ public class CollisionManager {
         }
     }
 
-    public void updateCollisions(Player player, Enemy enemy, Spaceship spaceship, ArrayList<Platform> platforms, float deltaTime) {
-        checkBoundaryCollisions(player);
 
+    public void updateCollisions(Player player, Enemy enemy, Spaceship spaceship, ArrayList<Platform> platforms, float deltaTime) {
+        float playerBottomY = player.getY();
+        System.out.println("players bottom y:" + playerBottomY);
+
+        if (player.getY() > 9.0 && player.getIsOnGround()) {
+            player.setIsOnGround(false);
+            controlManager.applyGravity(deltaTime);
+        }
+
+        if (checkIfOverHole(player)) {
+            isOverHole = true;
+            // The player is over a hole and not supported by a platform, they should fall.
+            System.out.println("Player is over a hole and not supported by a platform.");
+            player.setIsOnGround(false);
+            controlManager.applyGravity(deltaTime);
+        } else {
+            // Not over a hole, so handle the normal on-ground logic.
+            isOverHole = false;
+            System.out.println("Player is not over a hole.");
+            // Rest of your collision logic...
+        }
+
+        checkBoundaryCollisions(player);
         // Check collisions with all collectibles
         for (Entity collectible : entityManager.getCollectibles()) {
             checkResponse(player, collectible);
@@ -106,6 +132,7 @@ public class CollisionManager {
         }
 
         if (checkBaseGroundCollision(player)) {
+            //System.out.println("PLAYERS Y: " + player.getY());
             handleBaseGroundCollision(player);
         }
 
@@ -149,6 +176,37 @@ public class CollisionManager {
         }
     }
 
+    public boolean checkIfOverHole(Player player) {
+        float playerCenterX = player.getX() + player.getBounds().width / 2;
+        float playerWidth = player.getBounds().width;
+        float thresholdPercentage = 0.8f; // 80% threshold
+
+        System.out.println("Player Center X: " + playerCenterX + " Player Width: " + playerWidth);
+
+        System.out.println("Hole Positions: " + levelGenerator.getHolePositions());
+        for (Float holeCenterX : levelGenerator.getHolePositions()) {
+            float holeWidth = 80; // Adjust this value to the actual width of your holes
+            System.out.println("Checking hole at X: " + holeCenterX + " with width: " + holeWidth);
+
+            float leftHoleEdge = holeCenterX - holeWidth / 2;
+            float rightHoleEdge = holeCenterX + holeWidth / 2;
+
+            // Calculate the overlap
+            float leftOverlap = Math.max(playerCenterX - playerWidth / 2, leftHoleEdge);
+            float rightOverlap = Math.min(playerCenterX + playerWidth / 2, rightHoleEdge);
+            float overlapWidth = rightOverlap - leftOverlap;
+
+            // Calculate the percentage of the player over the hole
+            float overlapPercentage = overlapWidth / playerWidth;
+
+            // Check if the overlap is greater than the threshold percentage of the player's width
+            if (overlapWidth > 0 && overlapPercentage >= thresholdPercentage) {
+                System.out.println("Player is " + (overlapPercentage * 100) + "% over the hole at X: " + holeCenterX);
+                return true;
+            }
+        }
+        return false;
+    }
     public boolean checkBaseGroundCollision(Player player) {
         // Check if player has fallen below the pit level and reset to last safe position
         return player.getY() < Player.PIT_LEVEL;
@@ -244,6 +302,7 @@ public class CollisionManager {
         if (player.isInvulnerable()) {
             return false;
         }
+
 
         // Reduce player's health and handle invulnerability and stun within this method
         player.reduceHealth();
@@ -389,5 +448,8 @@ public class CollisionManager {
         }
         return false;
     }
+
+
 }
+
 
