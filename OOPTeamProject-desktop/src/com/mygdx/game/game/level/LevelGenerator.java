@@ -16,6 +16,11 @@ public class LevelGenerator {
     private ArrayList<Platform> platforms;
     private String letterBasePath;
     private int letterIndex = 0;
+
+    public ArrayList<Float> getHolePositions() {
+        return holePositions;
+    }
+
     private ArrayList<Float> holePositions = new ArrayList<>();
     private EntityManager entityManager;
     private float platformWidth;
@@ -131,22 +136,17 @@ public class LevelGenerator {
         platforms.add(platform);
         EntityManager.getInstance().addEntity(platform);
 
-        if (spawnCollectible) {
+        if (spawnCollectible && letterIndex < letters.length) {
             float collectibleY = y + groundPlatformHeight + 10; // Adjust 10 to the appropriate height above the platform
             float collectibleX = x + (platformWidth - 50) * MathUtils.random(); // Randomize collectible on the platform
 
-            if (letterIndex >= letters.length) {
-                letterIndex = 0; // Reset to 0 or handle it as needed
-            }
-
-            char currentLetterChar = letters[letterIndex].charAt(0); // Assuming letters is a String array
+            char currentLetterChar = letters[letterIndex].charAt(0);
             String imagePath = letterBasePath + currentLetterChar + ".png";
             Collectible collectible = new Collectible(imagePath, collectibleX, collectibleY, 50, 50, currentLetterChar);
             EntityManager.getInstance().addEntity(collectible);
-
-            letterIndex++; // Move to the next letter
         }
     }
+
 
     public ArrayList<Platform> getPlatforms() {
         return platforms;
