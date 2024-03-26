@@ -17,7 +17,7 @@ import engine.aiControl.AiControlManager;
 import engine.aiControl.DecisionMaking;
 import engine.aiControl.DetectionSystem;
 import engine.entity.EntityManager;
-import engine.entity.LevelGenerator;
+import engine.level.LevelGenerator;
 import engine.rendering.Camera;
 import engine.rendering.CameraManager;
 import engine.rendering.GameRenderer;
