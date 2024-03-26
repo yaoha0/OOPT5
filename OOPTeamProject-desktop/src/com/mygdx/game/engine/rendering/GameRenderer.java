@@ -11,28 +11,36 @@ import engine.collision.CollisionManager;
 import engine.entity.EntityManager;
 import engine.simulationLC.Ellipsis;
 import game.entity.Player;
-import game.screens.EndScreen;
-import game.screens.PlayScreen;
-import engine.scene.ScreenManager;
-import engine.simulationLC.SimulationLifeCycle;
-
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
-        this.batch = batch;
-        this.camera = camera;
-        this.uiMatrix = uiMatrix;
-        this.entityManager = entityManager;
-        this.backgroundTexture = backgroundTexture;
-        this.font = font;
-        this.ellipsis = ellipsis;
-        this.collisionManager = collisionManager;
-        this.heart = heart;
-        this.player = player;
-        this.shapeRenderer = new ShapeRenderer();
-        this.exclamTexture = new Texture("simulationLC/questbtn.png");
-    }
+public class GameRenderer {
+    private SpriteBatch batch;
+    private ShapeRenderer shapeRenderer;
+    private OrthographicCamera camera;
+    private EntityManager entityManager;
+    private Texture backgroundTexture;
+    private BitmapFont font;
+    private Ellipsis ellipsis;
+    private Matrix4 uiMatrix;
+    private Texture heart;
+    private Player player;
+    private CollisionManager collisionManager;
+    private Texture exclamTexture;
+
+	public GameRenderer(SpriteBatch batch, OrthographicCamera camera, Matrix4 uiMatrix, EntityManager entityManager, Texture backgroundTexture, BitmapFont font, Ellipsis ellipsis, CollisionManager collisionManager, Texture heart, Player player) {
+	        this.batch = batch;
+	        this.camera = camera;
+	        this.uiMatrix = uiMatrix;
+	        this.entityManager = entityManager;
+	        this.backgroundTexture = backgroundTexture;
+	        this.font = font;
+	        this.ellipsis = ellipsis;
+	        this.collisionManager = collisionManager;
+	        this.heart = heart;
+	        this.player = player;
+	        this.shapeRenderer = new ShapeRenderer();
+	        this.exclamTexture = new Texture("simulationLC/questbtn.png");
+	    }
 
     public void render(float delta, OrthographicCamera camera, Matrix4 uiMatrix) {
         // Clear the screen, set the camera, begin the batch, draw background, entities, etc.
