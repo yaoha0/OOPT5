@@ -47,6 +47,7 @@ public class PlayScreen implements Screen {
     private int width, height;
     private Vector3 position = new Vector3();
     private Camera camera1;
+    private Texture exclamTexture;
 
     private Texture backgroundTexture;
     // Management attributes
@@ -202,7 +203,7 @@ public class PlayScreen implements Screen {
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
 
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle); //gameRenderer.getExclamTexture()
+        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle, exclamTexture); //gameRenderer.getExclamTexture()
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
