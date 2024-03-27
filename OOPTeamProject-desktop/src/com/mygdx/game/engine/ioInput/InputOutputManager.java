@@ -15,6 +15,7 @@ import engine.simulationLC.Ellipsis;
 public class InputOutputManager implements InputProcessor {
     private PlayerControlManager playerControlManager;
     private SimulationLifeCycle simulationLifeCycle;
+    private NonControlled nonControlled;
     private Player player;
     private PopupManager popupManager;
     private Ellipsis ellipsis;
@@ -24,13 +25,14 @@ public class InputOutputManager implements InputProcessor {
     private Sound ingameSound;
     private long ingameSoundId;
 
-    public InputOutputManager(Player player , PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis, SimulationLifeCycle simulationLifeCycle,Texture exclamTexture) {
+    public InputOutputManager(Player player , PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis, SimulationLifeCycle simulationLifeCycle,Texture exclamTexture, NonControlled nonControlled) {
         this.playerControlManager = playerControlManager;
         this.popupManager = popupManager;
         this.ellipsis = ellipsis;
         this.player = player;
         this.simulationLifeCycle= simulationLifeCycle;
         this.exclamTexture = exclamTexture;
+        this.nonControlled = nonControlled;
 
         // Register this class as the input processor
         Gdx.input.setInputProcessor(this);
@@ -60,11 +62,17 @@ public class InputOutputManager implements InputProcessor {
                 playerControlManager.makePlayerJump();
                 break;
             case Input.Keys.ESCAPE:
-                if (popupManager.isPopupVisible()) {
+                if (popupManager.isPopupVisible() || popupManager.questPopupVisible) {
                     // Only resume if PopUp is visible
-                    ingameSound.resume(ingameSoundId);
+                    if (!popupManager.isMuted()) {
+                        ingameSound.resume(ingameSoundId);
+                    }
                     popupManager.resumeGame();
-                    System.out.println("Game resumed."); // Resume the game
+                    nonControlled.setPaused(false);
+                    if (popupManager.questPopupVisible) {
+                        popupManager.hideQuestPopup();
+                    }
+                    System.out.println("Game resumed.");
                     break;
                 }
         }
@@ -98,7 +106,7 @@ public class InputOutputManager implements InputProcessor {
         float buttonHeight = 50;
         float buttonSpacing = 40; // Space between buttons
         float totalButtonWidth = 2 * buttonWidth + buttonSpacing;
-        float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f;
+        float buttonsX = ((Gdx.graphics.getWidth() - totalButtonWidth) / 2f) + 54;
         float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f;
 
         if (x > buttonsX && x < buttonsX + buttonWidth &&
@@ -135,46 +143,88 @@ public class InputOutputManager implements InputProcessor {
         }
         return false; // Touch outside bounds
     }
+    public boolean isMuteButtonClicked(float x, float y) {
+        float buttonWidth = 50;
+        float buttonHeight = 50;
+        float buttonSpacing = 40; // Space between buttons
+        float totalButtonWidth = 3 * buttonWidth + 2 * buttonSpacing;
+        float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f;
+        float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f;
+        float muteButtonX = buttonsX + 2 * (buttonWidth + buttonSpacing) + 39;
+        if (x > muteButtonX && x < muteButtonX + buttonWidth &&
+                y > buttonY && y < buttonY + buttonHeight) {
+            return true; // Touch inside bounds
+        }
+        return false; // Touch outside bounds
+    }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         float touchX = screenX;
         float touchY = Gdx.graphics.getHeight() - screenY;
 
+        System.out.println("Touch event at: " + touchX + ", " + touchY);
 
         if (ellipsis != null && touchX >= ellipsis.getX() && touchX <= ellipsis.getX() + ellipsis.getWidth() &&
                 touchY >= ellipsis.getY() && touchY <= ellipsis.getY() + ellipsis.getHeight()) {
+            if (popupManager.questPopupVisible) {
+                popupManager.hideQuestPopup();
+            }
             popupManager.togglePopupVisibility();
-            ingameSound.pause(ingameSoundId);
+            if (!popupManager.isPaused()) {
+                popupManager.toggleGamePause();
+                ingameSound.pause(ingameSoundId);
+            }
             return true;
         }
 
         if (isExclamTextureClicked(touchX, touchY)) {
             System.out.println("Exclamation texture clicked");
+            if (popupManager.isPopupVisible()) {
+                popupManager.togglePopupVisibility();
+            }
             popupManager.showQuestPopup();
+            if (!popupManager.isPaused()) {
+                popupManager.toggleGamePause();
+                ingameSound.pause(ingameSoundId);
+            }
             return true;
         }
-
         if (popupManager.questPopupVisible) {
             popupManager.hideQuestPopup();
+            popupManager.toggleGamePause();
+            if (!popupManager.isPaused()) {
+                ingameSound.resume(ingameSoundId);
+            }
             return true;
         }
-
         if (popupManager.isPopupVisible()) {
-            // Assuming PopupManager has methods like isPauseButtonClicked(touchX, touchY) and isExitButtonClicked(touchX, touchY)
             if (isPauseButtonClicked(touchX, touchY)) {
                 popupManager.toggleGamePause();
-                ingameSound.pause(ingameSoundId);// This method should handle toggling the pause state and calling simulationLifeCycle methods as needed
+                if (!popupManager.isPaused() && !popupManager.isMuted()) {
+                    ingameSound.resume(ingameSoundId);
+                }
             } else if (isExitButtonClicked(touchX, touchY)) {
                 stopInGameSound();
-                popupManager.exitGame(); // Assumes a method in PopupManager that handles game exit
+                popupManager.exitGame();
+            }  else if (isMuteButtonClicked(touchX, touchY)) {
+                System.out.println("Mute button clicked.");
+                popupManager.toggleMute();
+                if (popupManager.isMuted()) {
+                    ingameSound.pause(ingameSoundId);
+                } else {
+                    ingameSound.resume(ingameSoundId);
+                }
+            }else {
+                popupManager.toggleGamePause();
+                if (!popupManager.isPaused() && !popupManager.isMuted()) {
+                    ingameSound.resume(ingameSoundId);
+                }
             }
-            return true; // Consume the touch event if it's within the PopUp
+            return true;
         }
-        return false;
+        return true;
     }
-
-
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         // Not used
@@ -212,14 +262,11 @@ public class InputOutputManager implements InputProcessor {
         gameOverSound.play();
     }
 
-    public void playInGameSound() {
-        ingameSound.play();
-    }
-
     public void stopInGameSound() {
-        ingameSound.stop();
+        if (!popupManager.isMuted()) {
+            ingameSound.pause(ingameSoundId);
+        }
     }
-
 
 
 
