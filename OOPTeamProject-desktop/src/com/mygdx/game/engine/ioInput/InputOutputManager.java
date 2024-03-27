@@ -255,11 +255,15 @@ public class InputOutputManager implements InputProcessor {
     }
 
     public void playCollectSound() {
-        collectSound.play();
+        if (!popupManager.isMuted()) {
+            collectSound.play();
+        }
     }
 
     public void playGameOverSound() {
-        gameOverSound.play();
+        if (!popupManager.isMuted()) {
+            gameOverSound.play();
+        }
     }
 
     public void stopInGameSound() {
