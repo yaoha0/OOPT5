@@ -191,11 +191,12 @@ public class PlayScreen implements Screen {
         simulationLifeCycle = new SimulationLifeCycle(GameMaster.getInstance());
         cameraManager = new CameraManager(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), levelLength, 0.1f, width, height);
 
-        // scene manager
+       // scene manager
         ScreenManager screenManager = ScreenManager.getInstance();
         // popUp manager
         RiddleGenerator riddleGenerator = new RiddleGenerator(player);
-        riddleGenerator.startNewRiddle();
+        PathfindingSystem pathfindingSystem = new PathfindingSystem();
+        NonControlled nonControlled = new NonControlled(pathfindingSystem);
         popupManager = new PopupManager(batch, simulationLifeCycle, camera1, riddleGenerator, nonControlled);
 
         // AI control manager
