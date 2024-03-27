@@ -196,14 +196,14 @@ public class PlayScreen implements Screen {
         // popUp manager
         RiddleGenerator riddleGenerator = new RiddleGenerator(player);
         riddleGenerator.startNewRiddle();
-        popupManager = new PopupManager(batch, simulationLifeCycle, camera1); //, riddleGenerator
+        popupManager = new PopupManager(batch, simulationLifeCycle, camera1, riddleGenerator, nonControlled);
 
         // AI control manager
         aicontrolManager = new AiControlManager(2, 200, decisionMaking, nonControlled);
         playerControlManager = new PlayerControlManager(player,this, collisionManager);
 
         // I/O manager
-        inputOutputManager = new InputOutputManager(player,playerControlManager, popupManager, ellipsis,simulationLifeCycle, exclamTexture); //gameRenderer.getExclamTexture()
+       inputOutputManager = new InputOutputManager(player, playerControlManager, popupManager, ellipsis, simulationLifeCycle, gameRenderer.exclamTexture, nonControlled);
         Gdx.input.setInputProcessor(inputOutputManager);
 
         // collision manager
