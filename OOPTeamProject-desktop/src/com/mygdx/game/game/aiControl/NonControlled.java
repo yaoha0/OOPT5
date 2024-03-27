@@ -13,11 +13,18 @@ public class NonControlled {
     private static final int BOTTOM_BOUNDARY = 0;
     private static final int GRAVITY = 4;
     private int drift_speed = 1;
+    private boolean isPaused = false;
     public NonControlled(PathfindingSystem pathfindingsystem) {
         this.pathfindingSystem = pathfindingsystem;
     }
     //Makes AI Attack player if within detection range, and idle if no players within range
+    public void setPaused(boolean isPaused) {
+        this.isPaused = isPaused;
+    }
     public void FallingObject(Entity ai, int gravity) {
+        if(isPaused){
+            return;
+        }
         //makes object fall
         if (ai.getY() > 0) {
             ai.setY(ai.getY() - gravity);
@@ -51,5 +58,7 @@ public class NonControlled {
         }
         return (int) (Math.random() * 3 * x);
     }
+
+
 
 }
