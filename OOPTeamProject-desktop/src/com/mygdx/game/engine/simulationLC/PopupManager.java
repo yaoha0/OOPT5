@@ -12,22 +12,27 @@ public class PopupManager {
     private Texture pauseButtonTexture;
     private Texture exitButtonTexture;
     private Texture playButtonTexture;
+    private Texture muteButtonTexture;
+    private Texture playAudioButtonTexture;
     private Texture infopopupTexture;
     private Texture questPopupTexture;
     public boolean questPopupVisible = false;
     public boolean isPopupVisible;
     public boolean infoPopupVisible = false;
     private boolean isPaused;
+    private boolean isMuted = false;
     private SimulationLifeCycle simulationLifeCycle;
+    private NonControlled nonControlled;
     private Camera camera; // Add camera attribute
     private RiddleGenerator riddleGenerator;
     private BitmapFont font;
 
-    public PopupManager(SpriteBatch batch, SimulationLifeCycle simulationLifeCycle, Camera camera,RiddleGenerator riddleGenerator) {
+    public PopupManager(SpriteBatch batch, SimulationLifeCycle simulationLifeCycle, Camera camera,RiddleGenerator riddleGenerator, NonControlled nonControlled) {
         this.batch = batch;
         this.simulationLifeCycle = simulationLifeCycle;
         this.camera = camera; // Assign the camera
         this.riddleGenerator = riddleGenerator;
+        this.nonControlled = nonControlled;
         this.font = new BitmapFont(Gdx.files.internal("simulationLC/textfont.fnt"));
         font.getData().setScale(0.65f);
         font.setColor(1, 1, 1, 1);
@@ -37,6 +42,8 @@ public class PopupManager {
         exitButtonTexture = new Texture("simulationLC/exit.png");
         playButtonTexture = new Texture("simulationLC/playbtn.png");
         infopopupTexture = new Texture("simulationLC/infopopup.png");
+        playAudioButtonTexture = new Texture("simulationLC/audio.png");
+        muteButtonTexture = new Texture("simulationLC/mutebtn.png");
         questPopupTexture = new Texture("simulationLC/questbg.png");
     }
 
@@ -47,6 +54,7 @@ public class PopupManager {
     public void toggleGamePause() {
         // Toggle the game's pause state and perform any necessary actions
         isPaused = !isPaused;
+        nonControlled.setPaused(isPaused);
         if (isPaused) {
             simulationLifeCycle.pauseGame();
         } else {
@@ -58,7 +66,6 @@ public class PopupManager {
     public void exitGame() {
         simulationLifeCycle.exitGame();
     }
-
     public void showinfoPopup() {
         infoPopupVisible = true;
         simulationLifeCycle.pauseGame();
@@ -78,16 +85,22 @@ public class PopupManager {
             float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f + camera.camera.position.x - Gdx.graphics.getWidth() / 2f;
             float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f + camera.camera.position.y - Gdx.graphics.getHeight() / 2f;
 
-            if (isPaused) {
-                batch.draw(playButtonTexture, buttonsX, buttonY, buttonWidth, buttonHeight);
-            } else {
-                batch.draw(pauseButtonTexture, buttonsX, buttonY, buttonWidth, buttonHeight);
-            }
+
+            batch.draw(playButtonTexture, buttonsX, buttonY, buttonWidth, buttonHeight);
+
 
             // Draw exit button
             float exitButtonX = buttonsX + buttonWidth + buttonSpacing;
             batch.draw(exitButtonTexture, exitButtonX, buttonY, buttonWidth, buttonHeight);
 
+            // Draw mute button
+            // Draw mute button
+            float muteButtonX = exitButtonX + buttonWidth + buttonSpacing;
+            if (isMuted) {
+                batch.draw(playAudioButtonTexture, muteButtonX, buttonY, buttonWidth, buttonHeight);
+            } else {
+                batch.draw(muteButtonTexture, muteButtonX, buttonY, buttonWidth, buttonHeight);
+            }
 
         }
         if (questPopupVisible) {
@@ -132,17 +145,26 @@ public class PopupManager {
         isPopupVisible = false;
     }
 
+    public void toggleMute() {
+        isMuted = !isMuted;
+        System.out.println("Mute state changed. Now isMuted = " + isMuted);
+    }
+
+    public boolean isMuted() {
+        return isMuted;
+    }
+
     public boolean isPopupVisible() {
         // so that my PlayScreen can access
         return isPopupVisible;
     }
 
     public void showQuestPopup() {
+        riddleGenerator.startNewRiddle(); // Generate a new riddle
         questPopupVisible = true;
         simulationLifeCycle.pauseGame();
         System.out.println("showQuestPopup appeared liao ");
         System.out.println("Current riddle: " + riddleGenerator.getCurrentRiddle());
-
     }
     public void hideQuestPopup() {
         questPopupVisible = false;
@@ -156,5 +178,9 @@ public class PopupManager {
         playButtonTexture.dispose();
         questPopupTexture.dispose();
         font.dispose();
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 }
