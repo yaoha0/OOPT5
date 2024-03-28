@@ -28,7 +28,7 @@ public class MainMenuScreen implements Screen {
         backgroundTexture = new Texture("simulationLC/background.png"); // Replace "background.jpg" with the path to your background image
         startButtonTexture = new Texture("simulationLC/start.png");
         pauseButtonTexture = new Texture("simulationLC/video-pause-button.png");
-        titleTexture = new Texture("simulationLC/title.png");
+        titleTexture = new Texture("simulationLC/TitleLogo.png");
         
         float buttonWidth = 300;  // or startButtonTexture.getWidth() if you want the exact size
         float buttonHeight = 300; // or startButtonTexture.getHeight()
@@ -55,7 +55,7 @@ public class MainMenuScreen implements Screen {
         game.batch.begin();
         game.batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.batch.draw(startButtonTexture, ((Gdx.graphics.getWidth() - 300) / 2), (((Gdx.graphics.getHeight() - 300) / 2)-80), 300, 300);
-        game.batch.draw(titleTexture, ((Gdx.graphics.getWidth() - 1024) / 2), (((Gdx.graphics.getHeight() - 261) / 2)+120), 1024, 261);
+        game.batch.draw(titleTexture, ((Gdx.graphics.getWidth() - titleTexture.getWidth()) / 2), (((Gdx.graphics.getHeight() - titleTexture.getHeight()) / 2)+170), titleTexture.getWidth(),titleTexture.getHeight());
         game.batch.end();
 
 
