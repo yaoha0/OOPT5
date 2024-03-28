@@ -231,6 +231,9 @@ public class CollisionManager {
         if (playerBounds.overlaps(spaceshipBounds)) {
             handleSpaceshipCollision(player, spaceship);
         }
+        else {
+        	popupManager.infoPopupVisible=false;
+        }
     }
 
     public void handleSpaceshipCollision(Player player, Spaceship spaceship) {
@@ -243,9 +246,7 @@ public class CollisionManager {
             inputOutputManager.stopInGameSound();
             screenManager.showEndScreen();
         } else {
-            // The player has not collected all letters, so they cannot end the game yet
-            // Handle this case, maybe show a message or prevent certain actions
-            System.out.println(player.getCollectedLetters());
+            popupManager.infoPopupVisible=true;
         }
     }
 
