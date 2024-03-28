@@ -27,6 +27,7 @@ public class InputOutputManager implements InputProcessor {
     private Sound gameOverSound;
     private Sound ingameSound;
     private long ingameSoundId;
+    public static float currentVolume = 1.0f;
 
     public InputOutputManager(Player player , PlayerControlManager playerControlManager, PopupManager popupManager, Ellipsis ellipsis, SimulationLifeCycle simulationLifeCycle,Texture exclamTexture, NonControlled nonControlled) {
         this.playerControlManager = playerControlManager;
@@ -164,6 +165,37 @@ public class InputOutputManager implements InputProcessor {
         return false; // Touch outside bounds
     }
 
+    public boolean isVolDownButtonClicked(float x, float y) {
+        float buttonWidth = 50;
+        float buttonHeight = 50;
+        float buttonSpacing = 40; // Space between buttons
+        // Adjust totalButtonWidth if you have more buttons in between
+        float totalButtonWidth = 3 * buttonWidth + 2 * buttonSpacing; // Adjusted for mute, vol up, and spacing
+        float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f;
+        float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f;
+        float volumeDownButtonX = buttonsX + 3 * (buttonWidth + buttonSpacing) + 39; // Adjusted for mute and vol up buttons + spacing
+        if (x > volumeDownButtonX && x < volumeDownButtonX + buttonWidth &&
+                y > buttonY && y < buttonY + buttonHeight) {
+            return true; // Touch inside bounds
+        }
+        return false; // Touch outside bounds
+    }
+    
+    public boolean isVolUpButtonClicked(float x, float y) {
+        float buttonWidth = 50;
+        float buttonHeight = 50;
+        float buttonSpacing = 40; // Space between buttons
+        float totalButtonWidth = 3 * buttonWidth + 2 * buttonSpacing;
+        float buttonsX = (Gdx.graphics.getWidth() - totalButtonWidth) / 2f;
+        float buttonY = (Gdx.graphics.getHeight() + buttonHeight) / 2f;
+        float volUpButtonX = buttonsX + 4 * (buttonWidth + buttonSpacing) + 39;
+        if (x > volUpButtonX && x < volUpButtonX + buttonWidth &&
+                y > buttonY && y < buttonY + buttonHeight) {
+            return true; // Touch inside bounds
+        }
+        return false; // Touch outside bounds
+    }
+
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         float touchX = screenX;
@@ -221,7 +253,13 @@ public class InputOutputManager implements InputProcessor {
                 } else {
                     ingameSound.resume(ingameSoundId);
                 }
-            }else {
+            }   else if (isVolUpButtonClicked(touchX, touchY)) {
+                adjustVolume(true); // Increase volume
+                System.out.println("Volume up button clicked.");
+            }   else if (isVolDownButtonClicked(touchX, touchY)) {
+                adjustVolume(false); // Decrease volume
+                System.out.println("Volume down button clicked.");
+            }   else {
                 popupManager.toggleGamePause();
                 if (!popupManager.isPaused() && !popupManager.isMuted()) {
                     ingameSound.resume(ingameSoundId);
@@ -274,7 +312,21 @@ public class InputOutputManager implements InputProcessor {
         }
     }
 
+    public void adjustVolume(boolean increase) {
+        float volumeChange = 0.25f; // Change volume by 25% each time
+        if (increase) {
+            currentVolume = Math.min(currentVolume + volumeChange, 1.0f); // Increase volume, max 1.0
+        } else {
+            currentVolume = Math.max(currentVolume - volumeChange, 0.0f); // Decrease volume, min 0.0
+        }
 
+        ingameSound.setVolume(ingameSoundId, currentVolume);
+    }
+    
+    public static float getCurrentVolume() {
+    	return currentVolume;
+    	
+    }
 
     /*public void update(float deltaTime) {
         if (player.getIsJumping()) {

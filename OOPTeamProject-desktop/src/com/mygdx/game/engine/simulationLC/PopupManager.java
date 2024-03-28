@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import engine.rendering.Camera;
 import game.aiControl.NonControlled;
 import game.logic.RiddleGenerator;
+import engine.ioInput.InputOutputManager;
 
 
 public class PopupManager {
@@ -20,9 +21,10 @@ public class PopupManager {
     private Texture playAudioButtonTexture;
     private Texture infopopupTexture;
     private Texture questPopupTexture;
+    private Texture volumeUpButtonTexture;
+    private Texture volumeDownButtonTexture;
     public boolean questPopupVisible = false;
     public boolean isPopupVisible;
-    public boolean infoPopupVisible = false;
     private boolean isPaused;
     private boolean isMuted = false;
     private SimulationLifeCycle simulationLifeCycle;
@@ -45,10 +47,11 @@ public class PopupManager {
         pauseButtonTexture = new Texture("simulationLC/pause.png");
         exitButtonTexture = new Texture("simulationLC/exit.png");
         playButtonTexture = new Texture("simulationLC/playbtn.png");
-        infopopupTexture = new Texture("simulationLC/infopopup.png");
         playAudioButtonTexture = new Texture("simulationLC/audio.png");
         muteButtonTexture = new Texture("simulationLC/mutebtn.png");
         questPopupTexture = new Texture("simulationLC/questbg.png");
+        volumeUpButtonTexture = new Texture("simulationLC/volume_up.png");
+        volumeDownButtonTexture = new Texture("simulationLC/volume_down.png");
     }
 
     public void togglePopupVisibility() {
@@ -70,10 +73,7 @@ public class PopupManager {
     public void exitGame() {
         simulationLifeCycle.exitGame();
     }
-    public void showinfoPopup() {
-        infoPopupVisible = true;
-        simulationLifeCycle.pauseGame();
-    }
+
 
     public void render() {
         batch.setProjectionMatrix(camera.camera.combined); // Set the projection matrix to the camera's combined matrix
@@ -105,6 +105,24 @@ public class PopupManager {
             } else {
                 batch.draw(muteButtonTexture, muteButtonX, buttonY, buttonWidth, buttonHeight);
             }
+                     
+            // Volume Down Button
+            float volumeDownButtonX = muteButtonX + buttonWidth + buttonSpacing; // Position it next to the Volume Up button
+            float volumeDownButtonY = buttonY; // Align vertically with other buttons
+            batch.draw(volumeDownButtonTexture, volumeDownButtonX, volumeDownButtonY, buttonWidth, buttonHeight);
+            
+            float volumeUpButtonX = volumeDownButtonX + buttonWidth + buttonSpacing; // Position it next to the existing buttons
+            float volumeUpButtonY = buttonY; // Align vertically with other buttons
+            batch.draw(volumeUpButtonTexture, volumeUpButtonX, volumeUpButtonY, buttonWidth, buttonHeight);
+            
+            float volume = InputOutputManager.getCurrentVolume(); // Get the current volume
+            String volumeText = "Volume: " + Math.round(volume * 100) + "%"; // Convert volume to a percentage string
+
+            // Position the volume level text appropriately
+            float volumeTextX = ((volumeUpButtonX + volumeDownButtonX) / 2) - 20; // Determine based on your UI layout
+            float volumeTextY = volumeDownButtonY + 80; // Determine based on your UI layout
+
+            font.draw(batch, volumeText, volumeTextX, volumeTextY);
 
         }
         if (questPopupVisible) {
@@ -126,18 +144,6 @@ public class PopupManager {
             font.draw(batch, riddle, textX, textY);
         }
 
-        if (infoPopupVisible) {
-            float imageWidth = 533;
-            float imageHeight = 421;
-            float screenWidth = Gdx.graphics.getWidth();
-            float screenHeight = Gdx.graphics.getHeight();
-            float imageX = (screenWidth - imageWidth) / 2;
-            float imageY = (screenHeight - imageHeight) / 2;
-
-            // Draw the information popup image
-            batch.draw(infopopupTexture, imageX, imageY, imageWidth, imageHeight);
-
-        }
 
         batch.end();
     }
@@ -181,6 +187,8 @@ public class PopupManager {
         exitButtonTexture.dispose();
         playButtonTexture.dispose();
         questPopupTexture.dispose();
+        volumeUpButtonTexture.dispose();
+        volumeDownButtonTexture.dispose();
         font.dispose();
     }
 
