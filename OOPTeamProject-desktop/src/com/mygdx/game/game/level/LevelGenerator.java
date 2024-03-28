@@ -5,8 +5,8 @@ import engine.entity.EntityManager;
 import game.entity.Collectible;
 import game.entity.Platform;
 import game.entity.Spaceship;
-import game.entity.EntityFactory;
-import game.entity.EntityFactory.EntityType;
+import engine.entity.EntityFactory;
+import engine.entity.EntityFactory.EntityType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
