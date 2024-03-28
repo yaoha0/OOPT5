@@ -144,7 +144,27 @@ public class PopupManager {
             font.draw(batch, riddle, textX, textY);
         }
 
+        if (infoPopupVisible) {
+            float imageWidth = 533;
+            float imageHeight = 421;
+            float screenWidth = Gdx.graphics.getWidth();
+            float screenHeight = Gdx.graphics.getHeight();
+            float imageX = (screenWidth - imageWidth) / 2;
+            float imageY = (screenHeight - imageHeight) / 2;
 
+            // Draw the information popup image
+            batch.draw(questPopupTexture, imageX, imageY, imageWidth, imageHeight);
+            
+            String text = "Player Has not collected all Letters";
+            GlyphLayout layout = new GlyphLayout(font, text);
+
+            // Calculate the position to center the text on the popup
+            float textX = imageX + (imageWidth - layout.width) / 2;
+            float textY = imageY + (imageHeight + layout.height) / 2;
+
+            // Draw the text
+            font.draw(batch, text, textX, textY);
+        }
         batch.end();
     }
 
