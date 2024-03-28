@@ -4,8 +4,7 @@
     <output url="file://$MODULE_DIR$/OOPT5/bin" />
     <exclude-output />
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="corretto-18" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="OOPT5" level="project" />
+    <orderEntry type="inheritedJdk" />
   </component>
 </module>
