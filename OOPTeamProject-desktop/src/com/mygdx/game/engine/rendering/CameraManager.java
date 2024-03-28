@@ -1,6 +1,7 @@
 package engine.rendering;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.MathUtils;
 import game.entity.Player;
 
 public class CameraManager {
@@ -34,34 +35,32 @@ public class CameraManager {
     }
 
     public void update(Player player) {
-        // Update camera to follow the player when moving past the dead zone
-        float deadZoneRight = camera.viewportWidth * 0.25f; // For a dead zone on the right
+        float playerCenterX = player.getX() + player.getWidth() / 2;
+        float playerCenterY = player.getY() + player.getHeight() / 2;
 
-        // Calculate the camera's right boundary limit
-        float cameraRightLimit = levelLength - camera.viewportWidth / 2;
+        // Calculate the camera's left and right boundary limits
+        float cameraLeftLimit = viewportWidth / 2;
+        float cameraRightLimit = levelLength - viewportWidth / 2;
 
-        // Only move camera if the player is beyond the dead zone and the camera is within the level boundary
-        if (player.getX() + player.getWidth() / 2 > camera.position.x + deadZoneRight) {
-            // Calculate potential new camera position based on player's current position
-            float newCameraPositionX = player.getX() + player.getWidth() / 2 - deadZoneRight;
-            // Clamp the camera's position to prevent it from showing space past the level end
-            camera.position.x = Math.min(newCameraPositionX, cameraRightLimit);
-        }
+        // Calculate the new camera position to center on the player
+        float newCameraPositionX = playerCenterX;
 
-        // Make sure the camera doesn't show space off the left side of the world
-        camera.position.x = Math.max(camera.position.x, camera.viewportWidth / 2);
+        // Clamp the camera's x position to prevent it from showing space past the level start or end
+        newCameraPositionX = MathUtils.clamp(newCameraPositionX, cameraLeftLimit, cameraRightLimit);
 
-        // Update camera's y position as before
-        camera.position.y = Math.max((player.getY() + player.getHeight() / 2), (float) height / 2);
+        // Interpolate the camera's position towards the new position
+        camera.position.x += (newCameraPositionX - camera.position.x) * lerpFactor;
+
+        // Calculate the camera's bottom boundary limit (if you have one, otherwise use a suitable default)
+        float cameraBottomLimit = viewportHeight / 2;
+        // Interpolate the camera's y position towards the new position
+        camera.position.y += (playerCenterY - camera.position.y) * lerpFactor;
+
+        // Clamp the camera's y position if necessary to prevent showing anything below the level (if applicable)
+        camera.position.y = Math.max(camera.position.y, cameraBottomLimit);
 
         // Update the camera
         camera.update();
-        // Ensures the camera's bottom edge is never below the ground level
-        camera.position.set(
-                (player.getX() + player.getWidth() / 2),
-                Math.max((player.getY() + player.getHeight() / 2), (float) height / 2),
-                0
-        );
     }
 
     public OrthographicCamera getCamera() {
