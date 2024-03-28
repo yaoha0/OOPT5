@@ -23,6 +23,8 @@ public class PlayerBoundaryCollisionHandler {
             }
         }
 
+        System.out.println(worldWidth);
+        System.out.println(player.getX());
         // Check right boundary (end of the level)
         if (playerBounds.x + playerBounds.width > worldWidth) {
             player.setX(worldWidth - playerBounds.width); // Position the player right at the right boundary of the world

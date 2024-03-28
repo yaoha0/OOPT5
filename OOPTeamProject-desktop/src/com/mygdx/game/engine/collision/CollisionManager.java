@@ -54,7 +54,7 @@ public class CollisionManager {
         this.platforms = platforms;
 
         // Initialize handlers with necessary dependencies
-        this.boundaryCollisionHandler = new PlayerBoundaryCollisionHandler(Gdx.graphics.getWidth());
+        this.boundaryCollisionHandler = new PlayerBoundaryCollisionHandler(Gdx.graphics.getWidth() * 2.8f);
         this.collectibleCollisionHandler = new PlayerCollectibleCollisionHandler(entityManager, inputOutputManager);
         this.enemyCollisionHandler = new PlayerEnemyCollisionHandler(inputOutputManager, screenManager);
         this.platformCollisionHandler = new PlayerPlatformCollisionHandler(platforms, levelGenerator);
@@ -69,7 +69,6 @@ public class CollisionManager {
         // Delegate boundary collision checking to the handler
         boundaryCollisionHandler.checkBoundaryCollisions(player);
 
-
         // Handle player's attempt to collect collectibles
         if (player.isAttemptingToCollect()) {
             for (Entity entity : entityManager.getCollectibles()) {
@@ -79,16 +78,6 @@ public class CollisionManager {
                 }
             }
             player.setAttemptingToCollect(false); // Reset the flag after attempting to collect
-        }
-
-        // Check and handle collision with an enemy
-        if (enemyCollisionHandler.checkCollision(player, enemy)) {
-            enemyCollisionHandler.handleCollision(player, enemy);
-        }
-
-        // Check and handle collision with a spaceship
-        if (spaceshipCollisionHandler.checkCollision(player, spaceship)) {
-            spaceshipCollisionHandler.handleCollision(player, spaceship);
         }
 
         if (player.getY() > 9.0 && player.getIsOnGround()) {
@@ -105,6 +94,16 @@ public class CollisionManager {
             // Not over a hole, so handle the normal on-ground logic.
             isOverHole = false;
             // Rest of your collision logic...
+        }
+
+        // Check and handle collision with an enemy
+        if (enemyCollisionHandler.checkCollision(player, enemy)) {
+            enemyCollisionHandler.handleCollision(player, enemy);
+        }
+
+        // Check and handle collision with a spaceship
+        if (spaceshipCollisionHandler.checkCollision(player, spaceship)) {
+            spaceshipCollisionHandler.handleCollision(player, spaceship);
         }
 
         // Check base ground collision and future collision prediction
