@@ -19,12 +19,12 @@ public class PopupManager {
     private Texture playButtonTexture;
     private Texture muteButtonTexture;
     private Texture playAudioButtonTexture;
-    private Texture infopopupTexture;
     private Texture questPopupTexture;
     private Texture volumeUpButtonTexture;
     private Texture volumeDownButtonTexture;
     public boolean questPopupVisible = false;
     public boolean isPopupVisible;
+    public boolean infoPopupVisible = false;
     private boolean isPaused;
     private boolean isMuted = false;
     private SimulationLifeCycle simulationLifeCycle;
