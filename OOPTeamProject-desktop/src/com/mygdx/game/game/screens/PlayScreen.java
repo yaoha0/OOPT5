@@ -14,6 +14,8 @@ import engine.aiControl.PathfindingSystem;
 import engine.aiControl.AiControlManager;
 import engine.aiControl.DecisionMaking;
 import engine.aiControl.DetectionSystem;
+import engine.entity.Entity;
+import engine.entity.EntityFactory;
 import engine.entity.EntityManager;
 import game.level.LevelGenerator;
 import engine.rendering.Camera;
@@ -26,7 +28,6 @@ import engine.simulationLC.SimulationLifeCycle;
 import game.aiControl.NonControlled;
 import engine.ioInput.InputOutputManager;
 import game.entity.*;
-import engine.entity.EntityFactory;
 import engine.entity.EntityFactory.EntityType;
 import game.logic.RiddleGenerator;
 import game.managers.PlayerControlManager;
@@ -115,7 +116,6 @@ public class PlayScreen implements Screen {
         popupManager.render();
 
         updateGameLogic(delta);
-        checkGameProgress();
     }
 
     private void initializeComponents() {
@@ -162,7 +162,7 @@ public class PlayScreen implements Screen {
 
         // level generator
         levelGenerator = new LevelGenerator(platformWidth, groundPlatformHeight, spaceAboveGroundPlatform,
-                levelLength, "entity/letters/", EntityManager.getInstance());
+                levelLength, "entity/letters/", EntityManager.getInstance(), spaceship);
         levelGenerator.createFloor(letters, player.getTargetWord());
         platforms = levelGenerator.getPlatforms();
     }
@@ -229,17 +229,21 @@ public class PlayScreen implements Screen {
         playerControlManager.update(delta);
         // for animations
         player.update(delta);
-        // check for all collisions
+
+        spaceship = getSpaceship();
         collisionManager.updateCollisions(player, enemy, spaceship, platforms, delta);
         aicontrolManager.updateAI(enemy, player);
     }
 
-    private void checkGameProgress() {
-        // Check if all collectibles have been collected
-        if (collisionManager.getCollectibleCount() == 3) {
-            simulationLifeCycle.nextLevel(collisionManager.getCollectibleCount());
+    public Spaceship getSpaceship() {
+        for (Entity entity : entityManager.getEntities()) {
+            if (entity instanceof Spaceship) {
+                return (Spaceship) entity;
+            }
         }
+        return null;
     }
+
     public SimulationLifeCycle getSimulationLifeCycle() {
         return simulationLifeCycle;
     }
