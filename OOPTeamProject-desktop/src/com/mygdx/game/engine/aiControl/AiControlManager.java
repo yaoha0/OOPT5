@@ -2,6 +2,7 @@ package engine.aiControl;
 
 import game.aiControl.NonControlled;
 import engine.entity.Entity;
+import game.entity.Enemy;
 
 public class AiControlManager {
 
@@ -18,7 +19,7 @@ public class AiControlManager {
         this.noncontrolled = noncontrolled;
     }
 
-    public void updateAI(Entity ai, Entity player) {
+    public void updateAI(Enemy ai, Entity player) {
         noncontrolled.FallingObject(ai, GRAVITY);
         //	decisionMaking.makeDecision(ai, player, detectionRange, speed);}
     }

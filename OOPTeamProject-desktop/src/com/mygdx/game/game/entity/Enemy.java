@@ -35,14 +35,24 @@ public class Enemy extends Entity {
         this.direction = direction;
     }
 
-    private float direction; // 1 for right, -1 for left
+    public void setDriftSpeed(float driftSpeed) {
+        this.driftspeed = driftSpeed;
+    }
+    
+    public float getDriftSpeed() {
+        return driftspeed;
+    }
 
-    public Enemy(String texturePath, float x, float y, float width, float height) {
+    private float direction; // 1 for right, -1 for left
+    private float driftspeed;
+
+    public Enemy(String texturePath, float x, float y, float width, float height, float driftspeed) {
         super(texturePath, x, y, width, height);
         this.boundingBoxWidth = width;
         this.boundingBoxHeight = height;
         // Initialize the bounding box, can be adjusted if a smaller hitbox is needed
         this.boundingBox = new Rectangle(x, y, boundingBoxWidth, boundingBoxHeight);
+        this.driftspeed = driftspeed;
     }
 
 

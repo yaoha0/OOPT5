@@ -1,23 +1,29 @@
 package game.screens;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
-import engine.collision.CollisionManager;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.mygdx.game.DesktopLauncher;
-import engine.aiControl.PathfindingSystem;
+import com.mygdx.game.GameMaster;
+
 import engine.aiControl.AiControlManager;
 import engine.aiControl.DecisionMaking;
 import engine.aiControl.DetectionSystem;
+import engine.aiControl.PathfindingSystem;
+import engine.collision.CollisionManager;
 import engine.entity.Entity;
 import engine.entity.EntityFactory;
+import engine.entity.EntityFactory.EntityType;
 import engine.entity.EntityManager;
-import game.level.LevelGenerator;
+import engine.ioInput.InputOutputManager;
 import engine.rendering.Camera;
 import engine.rendering.CameraManager;
 import engine.rendering.GameRenderer;
@@ -26,14 +32,13 @@ import engine.simulationLC.Ellipsis;
 import engine.simulationLC.PopupManager;
 import engine.simulationLC.SimulationLifeCycle;
 import game.aiControl.NonControlled;
-import engine.ioInput.InputOutputManager;
-import game.entity.*;
-import engine.entity.EntityFactory.EntityType;
+import game.entity.Enemy;
+import game.entity.Platform;
+import game.entity.Player;
+import game.entity.Spaceship;
+import game.level.LevelGenerator;
 import game.logic.RiddleGenerator;
 import game.managers.PlayerControlManager;
-import com.mygdx.game.GameMaster;
-
-import java.util.ArrayList;
 
 public class PlayScreen implements Screen {
     // attributes
@@ -41,7 +46,7 @@ public class PlayScreen implements Screen {
     private OrthographicCamera camera;
     private SpriteBatch batch;
     private Player player;
-    private Enemy enemy;
+    private ArrayList<Enemy> enemies;
     private Spaceship spaceship;
     private Ellipsis ellipsis;
     private int width, height;
@@ -132,6 +137,7 @@ public class PlayScreen implements Screen {
         pathfindingSystem = new PathfindingSystem();
         decisionMaking = new DecisionMaking(detectionSystem, pathfindingSystem);
         nonControlled = new NonControlled(pathfindingSystem);
+        enemies = new ArrayList<Enemy>();
     }
 
     private void drawHearts() {
@@ -146,14 +152,16 @@ public class PlayScreen implements Screen {
         // Instantiate game entities
         player = (Player) EntityFactory.createEntity(EntityType.PLAYER, "entity/player/idle.png",100, 0,
                 150, 150, "entity/player/walk.png", "entity/player/jump2.png",3, 4, 2);
-        enemy = (Enemy) EntityFactory.createEntity(EntityType.ENEMY, "entity/objects/rock.png", 600, 0,
-                80, 100);
+        for (int i = 0; i < 4; i++) {
+            Enemy enemy = (Enemy) EntityFactory.createEntity(EntityType.ENEMY, "entity/objects/rock.png", 600 + i * 100, 0, 80, 100); // Adjust position and other parameters as needed
+            enemies.add(enemy); // Add the enemy to the list
+            entityManager.addEntity(enemy); // If you're using an EntityManager, don't forget to add them there as well
+        }
         this.holePositions = new ArrayList<Float>();
         this.platforms = new ArrayList<Platform>();
         this.elevatedPlatforms = new ArrayList<Platform>();
         // Add entities to the entity manager
         entityManager.addEntity(player);
-        entityManager.addEntity(enemy);
 
         riddleGenerator = new RiddleGenerator(player);
         riddleGenerator.startNewRiddle();
@@ -162,7 +170,7 @@ public class PlayScreen implements Screen {
 
         // level generator
         levelGenerator = new LevelGenerator(platformWidth, groundPlatformHeight, spaceAboveGroundPlatform,
-                levelLength, "entity/letters/", EntityManager.getInstance(), spaceship);
+                levelLength, "entity/letters/", EntityManager.getInstance());
         levelGenerator.createFloor(letters, player.getTargetWord());
         platforms = levelGenerator.getPlatforms();
     }
@@ -231,8 +239,10 @@ public class PlayScreen implements Screen {
         player.update(delta);
 
         spaceship = getSpaceship();
+        for (Enemy enemy : enemies) {
         collisionManager.updateCollisions(player, enemy, spaceship, platforms, delta);
         aicontrolManager.updateAI(enemy, player);
+        }
     }
 
     public Spaceship getSpaceship() {
@@ -272,7 +282,9 @@ public class PlayScreen implements Screen {
         ellipsis.dispose();
         shapeRenderer.dispose();
         player.dispose();
+        for (Enemy enemy : enemies) {
         enemy.dispose();
+        }
         heart.dispose();
     }
 }

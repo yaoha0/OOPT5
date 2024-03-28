@@ -3,6 +3,7 @@ package game.aiControl;
 import com.badlogic.gdx.Gdx;
 import engine.aiControl.PathfindingSystem;
 import engine.entity.Entity;
+import game.entity.Enemy;
 
 public class NonControlled {
 
@@ -21,30 +22,30 @@ public class NonControlled {
     public void setPaused(boolean isPaused) {
         this.isPaused = isPaused;
     }
-    public void FallingObject(Entity ai, int gravity) {
+    public void FallingObject(Enemy ai, int gravity) {
         if(isPaused){
             return;
         }
         //makes object fall
         if (ai.getY() > 0) {
             ai.setY(ai.getY() - gravity);
-            ai.setX(ai.getX() + drift_speed);
+            ai.setX(ai.getX() + ai.getDriftSpeed());
         }
         //Teleport object back to the top if it goes out of bounds
         if (ai.getY() <= BOTTOM_BOUNDARY) {
             ai.setY(TOP_BOUNDARY);
             ai.setX(pathfindingSystem.randomposition());
-            drift_speed = randomdrift();
+            ai.setDriftSpeed(randomdrift());
         }
         else if (ai.getX() >= RIGHT_BOUNDARY) {
             ai.setY(TOP_BOUNDARY);
             ai.setX(pathfindingSystem.randomposition());
-            drift_speed = randomdrift();
+            ai.setDriftSpeed(randomdrift());
         }
         else if (ai.getX() <= LEFT_BOUNDARY) {
             ai.setY(TOP_BOUNDARY);
             ai.setX(pathfindingSystem.randomposition());
-            drift_speed = randomdrift();
+            ai.setDriftSpeed(randomdrift());
         }
     }
     //sets the falling object's drifting speed
