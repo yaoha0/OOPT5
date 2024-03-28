@@ -48,6 +48,7 @@ public class PopupManager {
         exitButtonTexture = new Texture("simulationLC/exit.png");
         playButtonTexture = new Texture("simulationLC/playbtn.png");
         playAudioButtonTexture = new Texture("simulationLC/audio.png");
+        infopopupTexture = new Texture("simulationLC/infopopup.png");
         muteButtonTexture = new Texture("simulationLC/mutebtn.png");
         questPopupTexture = new Texture("simulationLC/questbg.png");
         volumeUpButtonTexture = new Texture("simulationLC/volume_up.png");
