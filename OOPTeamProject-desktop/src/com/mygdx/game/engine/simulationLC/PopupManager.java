@@ -75,7 +75,11 @@ public class PopupManager {
         simulationLifeCycle.exitGame();
     }
 
-
+    public void showinfoPopup() {
+        infoPopupVisible = true;
+        simulationLifeCycle.pauseGame();
+    }
+    
     public void render() {
         batch.setProjectionMatrix(camera.camera.combined); // Set the projection matrix to the camera's combined matrix
 
