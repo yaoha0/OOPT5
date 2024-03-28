@@ -9,7 +9,7 @@ public class NonControlled {
 
     private PathfindingSystem pathfindingSystem;
     private static final int LEFT_BOUNDARY = 0;
-    private static final int RIGHT_BOUNDARY = Gdx.graphics.getWidth();
+    private static final float RIGHT_BOUNDARY = Gdx.graphics.getWidth() * 2.8f;
     private static final int TOP_BOUNDARY = Gdx.graphics.getHeight();
     private static final int BOTTOM_BOUNDARY = 0;
     private static final int GRAVITY = 4;

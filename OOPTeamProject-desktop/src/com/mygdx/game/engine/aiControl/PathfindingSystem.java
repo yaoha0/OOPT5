@@ -8,7 +8,7 @@ public class PathfindingSystem {
 	private boolean isMoving = false;
 	private int randomXpos;
 	private static final int LEFT_BOUNDARY = 0;
-	private static final int RIGHT_BOUNDARY = Gdx.graphics.getWidth();
+	private static final float RIGHT_BOUNDARY = Gdx.graphics.getWidth() * 2.8f;
 
 	public PathfindingSystem() {
 		// Initialize pathfinding system
