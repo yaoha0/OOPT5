@@ -1,6 +1,10 @@
-package game.entity;
+package engine.entity;
 
-import engine.entity.Entity;
+import game.entity.Collectible;
+import game.entity.Enemy;
+import game.entity.Platform;
+import game.entity.Player;
+import game.entity.Spaceship;
 
 public class EntityFactory {
 
