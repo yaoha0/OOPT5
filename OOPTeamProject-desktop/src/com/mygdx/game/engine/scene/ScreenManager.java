@@ -42,7 +42,7 @@ public class ScreenManager {
     }
 
     public void showMainScreen() {
-        game.setScreen(mainMenuScreen);
+        game.setScreen(new MainMenuScreen(game));
     }
 
     public void showPlayScreen() {
