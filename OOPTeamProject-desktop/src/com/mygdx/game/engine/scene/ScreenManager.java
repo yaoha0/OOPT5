@@ -57,6 +57,9 @@ public class ScreenManager {
     public void showIntroScreen() {
         game.setScreen(introScreen);
     }
-    
+    public void showWinScreen()
+    {
+    	game.setScreen(new WinScreen(batch, simulationLifeCycle));
+    }
     
 }
