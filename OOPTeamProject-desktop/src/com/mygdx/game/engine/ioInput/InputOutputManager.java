@@ -26,6 +26,7 @@ public class InputOutputManager implements InputProcessor {
     private Sound collectSound;
     private Sound gameOverSound;
     private Sound ingameSound;
+     private Sound winSound;
     private long ingameSoundId;
     public static float currentVolume = 1.0f;
 
@@ -47,6 +48,7 @@ public class InputOutputManager implements InputProcessor {
         collectSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/collectdiamond.mp3"));
         gameOverSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/gameover.mp3"));
         ingameSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/ingame.mp3"));
+        winSound = Gdx.audio.newSound(Gdx.files.internal("ioInput/audio/winAudio.mp3"));
         ingameSoundId = ingameSound.loop();
     }
 
@@ -304,6 +306,10 @@ public class InputOutputManager implements InputProcessor {
 
     public void playGameOverSound() {
         gameOverSound.play();
+    }
+
+     public void playWinSound(){
+    	winSound.play();
     }
 
     public void stopInGameSound() {
