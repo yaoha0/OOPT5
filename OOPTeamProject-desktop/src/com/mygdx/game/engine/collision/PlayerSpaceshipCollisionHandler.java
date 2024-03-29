@@ -46,9 +46,9 @@ public class PlayerSpaceshipCollisionHandler implements CollisionHandler {
                 entityManager.removeEntity(spaceship);
 
                 // Trigger game over or level completion
-                inputOutputManager.playGameOverSound();
+                inputOutputManager.playWinSound();
                 inputOutputManager.stopInGameSound();
-                screenManager.showEndScreen();
+                screenManager.showWinScreen();
             } else {
                 // The player has not collected all letters, so they cannot end the game yet
                 // Handle this case, maybe show a message or prevent certain actions
